@@ -5,9 +5,10 @@
 using std::list;
 
 //Parses the given string into a tree
-StatementTree::StatementTree(const char* input) : is_affirmed(true)
+StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VALIDITY_UNKNOWN)
 {
-  atom_name = new char[strlen(input)+1];
+  std::cout << input << std::endl;
+  /*atom_name = new char[strlen(input)+1];
   strcpy(atom_name, input);
   stripParens(atom_name);
   //if strlen(atom_name) == 0 error
@@ -31,7 +32,35 @@ StatementTree::StatementTree(const char* input) : is_affirmed(true)
     
     consolidateNegation();
     //consolidateChildren();
+  }*/
+  
+  atom_name = new char[strlen(input)+1];
+  strcpy(atom_name, input);
+  stripParens(atom_name);
+  int operator_pos = findOperator(atom_name);
+  node_type = operatorType(atom_name[operator_pos]);
+  if(node_type == ATOM)
+  {
+    int len = strlen(atom_name);
+    /*if(len == 0) is_syntactical = false;
+    if(atom_name[0] == '(' || atom_name[0] == ')') is_syntactical = false;
+    if(atom_name[len-1] == '(' || atom_name[len-1] == ')') is_syntactical = false;*/
+    return;
   }
+  
+  char* left = new char[operator_pos+1];
+  char* right = new char[strlen(atom_name)-operator_pos];
+  strncpy(left, atom_name, operator_pos);
+  strcpy(right, atom_name+operator_pos+1);
+  std::cout << "op " << node_type << ", left " << left << ", right " << right << std::endl;
+  delete [] atom_name;
+  atom_name = NULL;
+  //Check valid?
+  
+  children.push_front(new StatementTree(right));
+  if(strlen(left) != 0) children.push_front(new StatementTree(left));
+  
+  consolidateNegation();
 }
 
 //Copies the given tree. If dontNegate is true or not given, it will be
@@ -67,7 +96,13 @@ void StatementTree::consolidateNegation()
   children.splice(children.end(), old_child->children);
   node_type = old_child->node_type;
   is_affirmed = !old_child->is_affirmed;
-  atom_name = old_child->atom_name;
+  
+  if(old_child->atom_name != NULL)
+  {
+    atom_name = new char[strlen(old_child->atom_name)+1];
+    strcpy(atom_name, old_child->atom_name);
+  }
+  
   children.pop_front();
 }
 
@@ -98,6 +133,45 @@ child_itr StatementTree::end()
 
 bool StatementTree::isAffirmed()
 { return is_affirmed; }
+
+bool StatementTree::isValid()
+{
+  if(validity == IS_VALID) return true;
+  else if(validity == IS_INVALID) return false;
+  
+  //Is an atom, check for disallowed characters in name.
+  if(node_type == ATOM)
+  {
+    if(atom_name == NULL || strlen(atom_name) == 0)
+    {
+      validity = IS_INVALID;
+      return false;
+    }
+    for(int i = 0; i < strlen(atom_name); i++)
+      if(atom_name[i] == '(' || atom_name[i] == ')' || operatorType(atom_name[i]) != ATOM)
+      {
+        validity = IS_INVALID;
+        return false;
+      }
+    validity = IS_VALID;
+    return true;
+  }
+  
+  //Not an atom, check presence & validity of children
+  if(children.size() < 2)
+  {
+    validity = IS_INVALID;
+    return false;
+  }
+  for(child_itr itr = begin(); itr != end(); itr++)
+    if(!(*itr)->isValid())
+    {
+      validity = IS_INVALID;
+      return false;
+    }
+  validity = IS_VALID;
+  return true;
+}
 
 int StatementTree::nodeType()
 { return node_type; }
@@ -215,7 +289,7 @@ void StatementTree::negate()
 //((a&c)|(b&c)) -> (a&c)|(b&c)
 void StatementTree::stripParens(char* input)
 {
-  int strip_count = -1;
+  /*int strip_count = -1;
   int len = strlen(input);
   bool keep_going = true;
   while(keep_going)
@@ -239,7 +313,33 @@ void StatementTree::stripParens(char* input)
   
   input[len-strip_count] = '\0';
   len = strlen(input);
-  for(int i = strip_count; i <= len; i++) input[i-strip_count] = input[i];
+  for(int i = strip_count; i <= len; i++) input[i-strip_count] = input[i];*/
+  if(input == NULL) return;
+  int len = strlen(input);
+  if(len == 0) return;
+  
+  int strip_count = 0;
+  while(true)
+  {
+    if(input[0] != '(') break;
+    
+    int paren_depth = 1;
+    int close_index;
+    for(close_index = strip_count+1; close_index < len; close_index++)
+    {
+      if(input[close_index] == '(') paren_depth++;
+      else if(input[close_index] == ')') paren_depth--;
+      
+      if(paren_depth == 0) break;
+    }
+    
+    if(close_index != len-strip_count-1) break;
+    else strip_count++;
+  }
+  
+  input[len-strip_count] = '\0';
+  for(int i = strip_count; i <= len-strip_count; i++)
+    input[i-strip_count] = input[i];
 }
 
 //Returns the position of the first instance of the lowest order-of-operations

@@ -12,12 +12,14 @@ class StatementTree
   const static int ATOM = 0, IFF = 1, IMPLIES = 2, OR = 3, AND = 4, NOT = 5;
   const static int OP_START = 1, OP_END = 5;
   const static int ONLY = 0, LEFT = 0, RIGHT = 1;
+  const static int IS_INVALID = 0, IS_VALID = 1, VALIDITY_UNKNOWN = 2;
   
   private:
   int node_type;
   std::list<StatementTree*> children;
   char* atom_name;
   bool is_affirmed;
+  int validity;
   
   void consolidateNegation();
   void consolidateChildren();
@@ -33,6 +35,7 @@ class StatementTree
   
   //properties
   bool isAffirmed();
+  bool isValid();
   int nodeType();
   char* atomName();
   bool isAssociative();

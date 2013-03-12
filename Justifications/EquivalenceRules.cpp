@@ -1,21 +1,26 @@
 #include "EquivalenceRules.hpp"
 #include <list>
 #include <utility>
+#include <iostream>
 
 using std::map;
 using std::list;
 using std::pair;
+using std::cout;
+using std::endl;
 
-/*bool EquivalenceRule::isJustified()
+bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
 {
-  if(con == NULL || antecedents.size() != 1) return false;
-  return areEquivalent(&consequent, antecedents.front());
-}*/
+  if(ant.size() != 1) return false;
+  return areEquivalent(con.getStatementData(), ant.front()->getStatementData());
+}
 
 //Returns whether or not the two given sentences are equivalent using only this
 //equivalence rule.
 bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
 {
+  if(tree1 == NULL || tree2 == NULL) return false;
+  
   bind_map binds;
   
   //tree1 is of form 1 & tree2 is of form 2
@@ -29,9 +34,11 @@ bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
   if(match(tree1, &form2, binds) && match(tree2, &form1, binds)) return true;
   binds.clear();
   
-  //Root is the same, check equivalence of children.
+  //Root is the same type, check equivalence of children (or atom name if relevant)
   if(tree1->nodeType() == tree2->nodeType() && tree1->isAffirmed() == tree2->isAffirmed())
   {
+    if(tree1->nodeType() == StatementTree::ATOM) return tree1->equals(*tree2);
+    
     child_itr itr1 = tree1->begin();
     child_itr itr2 = tree2->begin();
     for(; itr1 != tree1->end(), itr2 != tree2->end(); itr1++, itr2++)
@@ -51,7 +58,8 @@ bool EquivalenceRule::match(StatementTree* target, StatementTree* form, bind_map
   if(form->nodeType() == StatementTree::ATOM)
   {
     StatementTree* sentence = new StatementTree(*target, form->isAffirmed());
-    pair<bind_map::iterator, bool> retval = binds.insert(pair<char, StatementTree*>(form->atomName()[0], sentence));
+    pair<bind_map::iterator, bool> retval = 
+      binds.insert(pair<char, StatementTree*>(form->atomName()[0], sentence));
     
     if(retval.second) return true;
     else return areEquivalent(sentence, retval.first->second);

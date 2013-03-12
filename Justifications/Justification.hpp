@@ -7,34 +7,15 @@
 
 class Justification
 {
-  protected:
-  std::list<ProofStatement*> antecedents;
-  ProofStatement* consequent;
+  private:
+  char* rule_name;
   
   public:
-  Justification(StatementTree* con);
-  virtual bool toggleAntecedent(StatementTree* ant);
+  Justification(const char* name);
   
-  virtual bool isJustified() = 0;
+  virtual bool isJustified(StatementTree& con, ant_list& ant) = 0;
+  char* getName();
 };
 
-class SubproofPremise : public Justification
-{
-  public:
-  SubproofPremise(ProofStatement* con) : Justification(con)
-  {}
-  
-  bool toggleAntecedent(StatementTree* ant);
-  bool isJustified();
-};
+#endi
 
-class InferenceRule : public Justification
-{
-  public:
-  InferenceRule(ProofStatement* con) : Justification(con)
-  {}
-  
-  bool isJustified();
-};
-
-#endif

@@ -2,20 +2,40 @@
 #define __PROOF_STATEMENT_H_
 
 #include "StatementTree.hpp"
+#include <list>
 #include "../Justifications/Justification.hpp"
+
+class ProofStatement;
+typedef std::list<ProofStatement*> ant_list;
 
 class ProofStatement
 {
-  private:
-  Justification reason;
-  StatementTree data;
+  protected:
+  ProofStatement* parent;
+  int line_index;
+  
+  Justification* reason;
+  StatementTree* data;
+  ant_list antecedents;
+  
+  bool antecedentsAllowable();
   
   public:
   ProofStatement(const char* input);
   ProofStatement(StatementTree* input);
   
-  StatementTree* getData();
-  bool isJustified();
+  virtual StatementTree* getStatementData();
+  virtual StatementTree* getAssumption();
+  virtual bool containsResult(StatementTree* match);
+  virtual bool isJustified();
+  
+  ProofStatement* getParent();
+  int getLineIndex();
+  
+  void rewrite(const char* input);
+  void rewrite(StatementTree* input);
+  void setJustification(Justification* new_reason);
+  virtual bool toggleAntecedent(StatementTree* ant);
 };
 
 #endif

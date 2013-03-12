@@ -1,31 +1,16 @@
 #include "Justification.hpp"
 
-using std::list;
-
-Justification::Justification(ProofStatement* con) : consequent(con)
-{}
-
-//Adds the given statement to the list of antecedents if it was not already
-//there, removes it if it was. Returns true if it was removed.
-bool Justification::toggleAntecedent(ProofStatement* ant)
+Justification::Justification(const char* name)
 {
-  if(ant == NULL) return false;
-  for(list<ProofStatement*>::iterator itr = antecedents.begin(); itr != antecedents.end(); itr++)
+  if(name == NULL)
   {
-    if(*itr == ant) //Comparing addresses
-    {
-      antecedents.erase(itr);
-      return true;
-    }
+    rule_name = NULL;
+    return;
   }
-  antecedents.push_back(itr);
-  return false;
+  rule_name = new char[strlen(name)+1];
+  strcpy(rule_name, name);
 }
 
-//SUBPROOF PREMISE
-bool SubproofPremise::toggleAntecedent(ProofStatemet* ant)
-{ return false; }
-
-bool SubproofPremise::isJustified()
-{ return true; }
+char* Justification::getName()
+{ return rule_name; }
 
