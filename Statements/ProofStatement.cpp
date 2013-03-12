@@ -1,10 +1,10 @@
 #include "ProofStatement.hpp"
 
-ProofStatement::ProofStatement(const char* input) : reason(NULL)
+ProofStatement::ProofStatement(const char* input) : parent(NULL), reason(NULL)
 { data = new StatementTree(input); }
 
-ProofStatement::ProofStatement(StatementTree* input) : reason(NULL)
-{ data = new StatementTree(input); }
+ProofStatement::ProofStatement(StatementTree* input) : parent(NULL), reason(NULL)
+{ data = new StatementTree(*input); }
 
 StatementTree* ProofStatement::getStatementData()
 { return data; }
@@ -17,7 +17,7 @@ bool ProofStatement::containsResult(StatementTree* match)
 
 bool ProofStatement::isJustified()
 {
-  if(!data->isValid || reason == NULL || !antecedentsAllowable()) return false;
+  if(!data->isValid() || reason == NULL || !antecedentsAllowable()) return false;
   return reason->isJustified(*data, antecedents);
 }
 
@@ -32,7 +32,7 @@ bool ProofStatement::antecedentsAllowable()
     bool target_found = false;
     for(ProofStatement* traveller = parent; ; traveller = traveller->parent)
     {
-      if(traveller == parent)
+      if(traveller == target)
       {
         target_found = true;
         break;
@@ -59,7 +59,7 @@ void ProofStatement::rewrite(const char* input)
 void ProofStatement::rewrite(StatementTree* input)
 {
   delete data;
-  data = new StatementTree(input);
+  data = new StatementTree(*input);
 }
 
 void ProofStatement::setJustification(Justification* new_reason)
@@ -73,7 +73,7 @@ void ProofStatement::setJustification(Justification* new_reason)
 bool ProofStatement::toggleAntecedent(ProofStatement* ant)
 {
   if(ant == NULL) return false;
-  for(list<ProofStatement*>::iterator itr = antecedents.begin(); itr != antecedents.end(); itr++)
+  for(ant_list::iterator itr = antecedents.begin(); itr != antecedents.end(); itr++)
   {
     if(*itr == ant) //Comparing addresses
     {
@@ -81,7 +81,7 @@ bool ProofStatement::toggleAntecedent(ProofStatement* ant)
       return true;
     }
   }
-  antecedents.push_back(itr);
+  antecedents.push_back(ant);
   return false;
 }
 

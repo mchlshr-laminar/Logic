@@ -1,9 +1,12 @@
 #ifndef __JUSTIFICATION_H_
 #define __JUSTIFICATION_H_
 
+#include <list>
+
+class Justification;
+
 #include "../Statements/StatementTree.hpp"
 #include "../Statements/ProofStatement.hpp"
-#include <list>
 
 class Justification
 {
@@ -17,5 +20,5 @@ class Justification
   char* getName();
 };
 
-#endi
+#endif
 

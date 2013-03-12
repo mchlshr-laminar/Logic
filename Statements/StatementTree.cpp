@@ -39,14 +39,7 @@ StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VA
   stripParens(atom_name);
   int operator_pos = findOperator(atom_name);
   node_type = operatorType(atom_name[operator_pos]);
-  if(node_type == ATOM)
-  {
-    int len = strlen(atom_name);
-    /*if(len == 0) is_syntactical = false;
-    if(atom_name[0] == '(' || atom_name[0] == ')') is_syntactical = false;
-    if(atom_name[len-1] == '(' || atom_name[len-1] == ')') is_syntactical = false;*/
-    return;
-  }
+  if(node_type == ATOM) return;
   
   char* left = new char[operator_pos+1];
   char* right = new char[strlen(atom_name)-operator_pos];
@@ -85,6 +78,8 @@ StatementTree::~StatementTree()
     delete [] atom_name;
     atom_name = NULL;
   }
+  for(child_itr itr = begin(); itr != end(); itr++)
+    delete *itr;
 }
 
 //Incorporates negation into root
@@ -147,7 +142,7 @@ bool StatementTree::isValid()
       validity = IS_INVALID;
       return false;
     }
-    for(int i = 0; i < strlen(atom_name); i++)
+    for(unsigned int i = 0; i < strlen(atom_name); i++)
       if(atom_name[i] == '(' || atom_name[i] == ')' || operatorType(atom_name[i]) != ATOM)
       {
         validity = IS_INVALID;

@@ -1,4 +1,5 @@
 #include "Justification.hpp"
+#include <cstring>
 
 Justification::Justification(const char* name)
 {

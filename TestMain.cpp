@@ -9,15 +9,15 @@ using std::endl;
 
 int main(int nargs, char** args)
 {
-  if(nargs < 2) return 0;
-  EquivalenceRule DeM("!(a&b)", "!a|!b");
-  StatementTree steve(args[1]);
-  StatementTree bob(args[2]);
-  if(DeM.areEquivalent(&steve, &bob)) cout << "equiv\n";
-  else cout << "not equiv\n";
-  /*cout << steve.createDisplayString() << endl;
-  StatementTree evets(steve, false);
-  cout << evets.createDisplayString() << endl;*/
-  
+  EquivalenceRule DeM("!(a&b)", "!a|!b", "DeMorgan"); 
+  ProofStatement result(args[1]);
+  result.setJustification(&DeM);
+  for(int i = 2; i < nargs; i++)
+  {
+    ProofStatement* temp = new ProofStatement(args[i]);
+    result.toggleAntecedent(temp);
+  }
+  if(result.isJustified()) cout << "Justified\n";
+  else cout << "Not justified\n";
   return 0;
 }

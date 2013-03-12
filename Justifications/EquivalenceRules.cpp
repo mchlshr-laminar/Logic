@@ -12,7 +12,7 @@ using std::endl;
 bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
 {
   if(ant.size() != 1) return false;
-  return areEquivalent(con.getStatementData(), ant.front()->getStatementData());
+  return areEquivalent(&con, ant.front()->getStatementData());
 }
 
 //Returns whether or not the two given sentences are equivalent using only this

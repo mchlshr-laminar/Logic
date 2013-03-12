@@ -1,12 +1,13 @@
 #ifndef __PROOF_STATEMENT_H_
 #define __PROOF_STATEMENT_H_
 
-#include "StatementTree.hpp"
 #include <list>
-#include "../Justifications/Justification.hpp"
 
 class ProofStatement;
 typedef std::list<ProofStatement*> ant_list;
+
+#include "StatementTree.hpp"
+#include "../Justifications/Justification.hpp"
 
 class ProofStatement
 {
@@ -35,7 +36,7 @@ class ProofStatement
   void rewrite(const char* input);
   void rewrite(StatementTree* input);
   void setJustification(Justification* new_reason);
-  virtual bool toggleAntecedent(StatementTree* ant);
+  virtual bool toggleAntecedent(ProofStatement* ant);
 };
 
 #endif
