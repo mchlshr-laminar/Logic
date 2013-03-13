@@ -7,32 +7,7 @@ using std::list;
 //Parses the given string into a tree
 StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VALIDITY_UNKNOWN)
 {
-  std::cout << input << std::endl;
-  /*atom_name = new char[strlen(input)+1];
-  strcpy(atom_name, input);
-  stripParens(atom_name);
-  //if strlen(atom_name) == 0 error
-  int operatorPos = findOperator(atom_name);
-  node_type = operatorType(atom_name[operatorPos]);
-  
-  //Create the children
-  if(node_type != ATOM)
-  {
-    char* left = new char[operatorPos+1];
-    char* right = new char[strlen(atom_name)-operatorPos];
-    strncpy(left, atom_name, operatorPos);
-    strncpy(right, atom_name+operatorPos+1, strlen(atom_name)-operatorPos-1);
-    delete [] atom_name;
-    atom_name = NULL;
-    //If length of right == 0 error
-    children.push_front(new StatementTree(right));
-    delete [] right;
-    if(strlen(left) != 0) children.push_front(new StatementTree(left));
-    delete [] left;
-    
-    consolidateNegation();
-    //consolidateChildren();
-  }*/
+  //std::cout << input << std::endl;
   
   atom_name = new char[strlen(input)+1];
   strcpy(atom_name, input);
@@ -45,7 +20,7 @@ StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VA
   char* right = new char[strlen(atom_name)-operator_pos];
   strncpy(left, atom_name, operator_pos);
   strcpy(right, atom_name+operator_pos+1);
-  std::cout << "op " << node_type << ", left " << left << ", right " << right << std::endl;
+  //std::cout << "op " << node_type << ", left " << left << ", right " << right << std::endl;
   delete [] atom_name;
   atom_name = NULL;
   //Check valid?
@@ -284,31 +259,6 @@ void StatementTree::negate()
 //((a&c)|(b&c)) -> (a&c)|(b&c)
 void StatementTree::stripParens(char* input)
 {
-  /*int strip_count = -1;
-  int len = strlen(input);
-  bool keep_going = true;
-  while(keep_going)
-  {
-    strip_count++;
-    int paren_depth = 0;
-    if(input[len-strip_count-1] != ')') break;
-    
-    for(int i = strip_count; i < len-strip_count-1; i++)
-    {
-      if(input[i] == '(') paren_depth++;
-      else if(input[i] == ')') paren_depth--;
-      if(paren_depth < 0) return;
-      if(paren_depth == 0)
-      {
-        keep_going = false;
-        break;
-      }
-    }
-  }
-  
-  input[len-strip_count] = '\0';
-  len = strlen(input);
-  for(int i = strip_count; i <= len; i++) input[i-strip_count] = input[i];*/
   if(input == NULL) return;
   int len = strlen(input);
   if(len == 0) return;

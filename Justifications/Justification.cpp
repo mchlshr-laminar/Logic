@@ -12,6 +12,15 @@ Justification::Justification(const char* name)
   strcpy(rule_name, name);
 }
 
+Justification::~Justification()
+{
+  if(name != NULL)
+  {
+    delete [] name;
+    name = NULL;
+  }
+}
+
 char* Justification::getName()
 { return rule_name; }
 

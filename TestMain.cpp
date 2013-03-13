@@ -9,8 +9,11 @@ using std::endl;
 
 int main(int nargs, char** args)
 {
-  EquivalenceRule DeM("!(a&b)", "!a|!b", "DeMorgan"); 
+  if(nargs < 2) return 0;
+  EquivalenceRule DeM("!(a&b)", "!a|!b", "DeMorgan");
   ProofStatement result(args[1]);
+  if(result.getStatementData()->isValid()) cout << "Valid formulation\n";
+  else cout << "Invalid formulation\n";
   result.setJustification(&DeM);
   for(int i = 2; i < nargs; i++)
   {

@@ -9,6 +9,12 @@ using std::pair;
 using std::cout;
 using std::endl;
 
+EquivalenceRule::~EquivalenceRule()
+{
+  delete form1;
+  delete form2;
+}
+
 bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
 {
   if(ant.size() != 1) return false;
@@ -26,13 +32,12 @@ bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
   //tree1 is of form 1 & tree2 is of form 2
   matchFormOneNegation(tree1);
   if(match(tree1, &form1, binds) && match(tree2, &form2, binds)) return true;
-  binds.clear();
-  //Deallocate bound sentences?
+  removeBoundForms(binds);
   
   //vice versa
   matchFormOneNegation(tree2);
   if(match(tree1, &form2, binds) && match(tree2, &form1, binds)) return true;
-  binds.clear();
+  removeBoundForms(binds);
   
   //Root is the same type, check equivalence of children (or atom name if relevant)
   if(tree1->nodeType() == tree2->nodeType() && tree1->isAffirmed() == tree2->isAffirmed())
@@ -76,6 +81,13 @@ bool EquivalenceRule::match(StatementTree* target, StatementTree* form, bind_map
   return itr1 == target->end() && itr2 == form->end();
 }
 
+void EquivalenceRule::removeBoundForms(bind_map& binds)
+{
+  for(bind_map::iterator itr = binds.begin(); itr != binds.end(); itr++)
+    delete itr->second;
+  binds.clear();
+}
+
 //Simultaneously toggles form negation to ensure form 1's negation
 //matches the target. (note a == !b <==> !a == b).
 void EquivalenceRule::matchFormOneNegation(StatementTree* target)
@@ -86,3 +98,4 @@ void EquivalenceRule::matchFormOneNegation(StatementTree* target)
     form2.negate();
   }
 }
+

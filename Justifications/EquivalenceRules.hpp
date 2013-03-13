@@ -1,15 +1,11 @@
 #ifndef __EQUIV_RULES_H_
 #define __EQUIV_RULES_H_
 
-#include <map>
-
 class EquivalenceRule;
 
 #include "Justification.hpp"
 #include "../Statements/StatementTree.hpp"
 #include "../Statements/ProofStatement.hpp"
-
-typedef std::map<char, StatementTree*> bind_map;
 
 class EquivalenceRule : public Justification
 {
@@ -20,10 +16,14 @@ class EquivalenceRule : public Justification
   bool match(StatementTree* target, StatementTree* form, bind_map& binds);
   void matchFormOneNegation(StatementTree* target);
   
+  void removeBoundForms(bind_map& binds);
+  
   public:
-  EquivalenceRule(char* f1, char* f2, const char* name) : Justification(name),
+  EquivalenceRule(const char* f1, const char* f2, const char* name) : Justification(name),
     form1(f1), form2(f2)
   {}
+  
+  ~EquivalenceRule();
   
   bool isJustified(StatementTree& con, ant_list& ant);
 };
