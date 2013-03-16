@@ -4,6 +4,7 @@
 #include <list>
 
 class StatementTree;
+typedef std::list<StatementTree*> tree_list;
 typedef std::list<StatementTree*>::iterator child_itr;
 
 class StatementTree

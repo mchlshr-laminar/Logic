@@ -9,12 +9,6 @@ using std::pair;
 using std::cout;
 using std::endl;
 
-EquivalenceRule::~EquivalenceRule()
-{
-  delete form1;
-  delete form2;
-}
-
 bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
 {
   if(ant.size() != 1) return false;
@@ -31,13 +25,15 @@ bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
   
   //tree1 is of form 1 & tree2 is of form 2
   matchFormOneNegation(tree1);
-  if(match(tree1, &form1, binds) && match(tree2, &form2, binds)) return true;
+  bool result = match(tree1, &form1, binds) && match(tree2, &form2, binds);
   removeBoundForms(binds);
+  if(result) return true;
   
   //vice versa
   matchFormOneNegation(tree2);
-  if(match(tree1, &form2, binds) && match(tree2, &form1, binds)) return true;
+  result = match(tree1, &form2, binds) && match(tree2, &form1, binds);
   removeBoundForms(binds);
+  if(result) return true;
   
   //Root is the same type, check equivalence of children (or atom name if relevant)
   if(tree1->nodeType() == tree2->nodeType() && tree1->isAffirmed() == tree2->isAffirmed())
@@ -67,7 +63,12 @@ bool EquivalenceRule::match(StatementTree* target, StatementTree* form, bind_map
       binds.insert(pair<char, StatementTree*>(form->atomName()[0], sentence));
     
     if(retval.second) return true;
-    else return areEquivalent(sentence, retval.first->second);
+    else
+    {
+      bool result = areEquivalent(sentence, retval.first->second);
+      delete sentence;
+      return result;
+    }
   }
   
   //The form is not a sentence variable, return true if target matches form's type &
@@ -79,13 +80,6 @@ bool EquivalenceRule::match(StatementTree* target, StatementTree* form, bind_map
   for(; itr1 != target->end(), itr2 != form->end(); itr1++, itr2++)
     if(!match(*itr1, *itr2, binds)) return false;
   return itr1 == target->end() && itr2 == form->end();
-}
-
-void EquivalenceRule::removeBoundForms(bind_map& binds)
-{
-  for(bind_map::iterator itr = binds.begin(); itr != binds.end(); itr++)
-    delete itr->second;
-  binds.clear();
 }
 
 //Simultaneously toggles form negation to ensure form 1's negation

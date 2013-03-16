@@ -16,14 +16,12 @@ class EquivalenceRule : public Justification
   bool match(StatementTree* target, StatementTree* form, bind_map& binds);
   void matchFormOneNegation(StatementTree* target);
   
-  void removeBoundForms(bind_map& binds);
-  
   public:
   EquivalenceRule(const char* f1, const char* f2, const char* name) : Justification(name),
     form1(f1), form2(f2)
   {}
   
-  ~EquivalenceRule();
+  //~EquivalenceRule();
   
   bool isJustified(StatementTree& con, ant_list& ant);
 };
