@@ -14,8 +14,11 @@ class InferenceRule : public Justification
   tree_list required_forms;
   
   bool match(StatementTree* target, StatementTree* form, bind_map& binds);
-  bool findFormsForAntecedents(ant_list::iterator begin, ant_list::iterator end,
-    bind_map& binds);
+  //bool findFormsForAntecedents(ant_list::iterator begin, ant_list::iterator end,
+  //  bind_map& binds);
+  bool findAntecedentsForForms(tree_list::iterator form, ant_list& ant,
+    bind_map& binds, statement_usage_map& ant_usage);
+  bool checkAntecedentRelevance(statement_usage_map& ant_usage);
   
   public:
   InferenceRule(const char* result, const char* name) : Justification(name),

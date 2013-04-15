@@ -10,6 +10,7 @@ class Justification;
 #include "../Statements/ProofStatement.hpp"
 
 typedef std::map<char, StatementTree*> bind_map;
+typedef std::map<ProofStatement*, int> statement_usage_map;
 
 class Justification
 {
