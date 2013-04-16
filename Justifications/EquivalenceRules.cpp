@@ -9,6 +9,28 @@ using std::pair;
 using std::cout;
 using std::endl;
 
+EquivalenceRule::~EquivalenceRule()
+{
+  list<equiv_pair>::iterator itr = equivalent_pairs.begin();
+  for(; itr != equivalent_pairs.end(); itr++)
+  {
+    delete itr->first;
+    delete itr->second;
+  }
+}
+
+void EquivalenceRule::addEquivalentPair(const char* form1, const char* form2)
+{
+  equiv_pair new_equivalence(new StatementTree(form1), new StatementTree(form2));
+  if(!new_equivalence.first->isValid() || !new_equivalence.second->isValid())
+  {
+    delete new_equivalence.first;
+    delete new_equivalence.second;
+    return;
+  }
+  equivalent_pairs.push_back(new_equivalence);
+}
+
 bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
 {
   if(ant.size() != 1) return false;
@@ -17,7 +39,7 @@ bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
 
 //Returns whether or not the two given sentences are equivalent using only this
 //equivalence rule.
-bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
+/*bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
 {
   if(tree1 == NULL || tree2 == NULL) return false;
   
@@ -47,6 +69,57 @@ bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
     return itr1 == tree1->end() && itr2 == tree2->end();
   }
   
+  return false;
+}*/
+
+bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
+{
+  if(tree1 == NULL || tree2 == NULL) return false;
+  bind_map binds;
+  
+  //Root is the same, check equivalence of children
+  if(tree1->nodeType() == tree2->nodeType() && tree1->isAffirmed() == tree2->isAffirmed())
+  {
+    if(tree1->nodeType() == StatementTree::ATOM) return tree1->equals(*tree2);
+    //Atoms must be equal to be equivalent
+    
+    child_itr itr1 = tree1->begin();
+    child_itr itr2 = tree2->begin();
+    bool all_children_equiv = true; //Might be unneeded; itrs wont reach end if break happens
+    for(; itr1 != tree1->end(), itr2 != tree2->end(); itr1++, itr2++)
+    {
+      if(!areEquivalent(*itr1, *itr2))
+      {
+        all_children_equiv = false;
+        break;
+      }
+    }
+    if(all_children_equiv && itr1 == tree1->end() && itr2 == tree2->end())
+      return true;
+    //It's possible equivalent pairs would have same root so don't return false
+    //if this doesn't work.
+    //Could just put this segment after equivalence pairs but that might be
+    //slower with buried equivalence.
+  }
+  
+  //Check the equivalent pairs
+  list<equiv_pair>::iterator itr = equivalent_pairs.begin();
+  for(; itr != equivalent_pairs.end(); itr++)
+  {
+    //tree1 is of first form & tree2 is of second
+    matchFormOneNegation(tree1, *itr);
+    bool result = match(tree1, itr->first, binds) && match(tree2, itr->second, binds);
+    removeBoundForms(binds);
+    if(result) return true;
+    
+    //tree1 is of second form & tree2 is of first
+    matchFormOneNegation(tree2, *itr);
+    result = match(tree1, itr->second, binds) && match(tree2, itr->first, binds);
+    removeBoundForms(binds);
+    if(result) return true;
+  }
+  
+  //Nothing worked
   return false;
 }
 
@@ -84,12 +157,17 @@ bool EquivalenceRule::match(StatementTree* target, StatementTree* form, bind_map
 
 //Simultaneously toggles form negation to ensure form 1's negation
 //matches the target. (note a == !b <==> !a == b).
-void EquivalenceRule::matchFormOneNegation(StatementTree* target)
+void EquivalenceRule::matchFormOneNegation(StatementTree* target, equiv_pair& source)
 {
-  if(target->isAffirmed() != form1.isAffirmed())
+  /*if(target->isAffirmed() != form1.isAffirmed())
   {
     form1.negate();
     form2.negate();
+  }*/
+  if(target->isAffirmed() != source.first->isAffirmed())
+  {
+    source.first->negate();
+    source.second->negate();
   }
 }
 
