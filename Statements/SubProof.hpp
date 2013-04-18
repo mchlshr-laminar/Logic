@@ -11,6 +11,11 @@ class SubProof : public ProofStatement
   private:
   
   public:
+  SubProof(const char* input) : ProofStatement(input)
+  {}
+  SubProof(StatementTree* input) : ProofStatement(input)
+  {}
+  
   StatementTree* getStatementData();
   StatementTree* getAssumption();
   bool containsResult(StatementTree* match);
