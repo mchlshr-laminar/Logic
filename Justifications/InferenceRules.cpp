@@ -1,4 +1,5 @@
 #include "InferenceRules.hpp"
+#include "../Statements/SubProof.hpp"
 #include <utility>
 #include <iostream>
 
@@ -10,14 +11,21 @@ using std::endl;
 
 InferenceRule::~InferenceRule()
 {
-  for(tree_list::iterator itr = required_forms.begin(); itr != required_forms.end(); itr++)
-    delete *itr;
+  list<form_pair>::iterator itr = required_forms.begin();
+  for(; itr != required_forms.end(); itr++)
+  {
+    delete FORM_STATEMENT(*itr);
+    if(FORM_ASSUMPTION(*itr) != NULL) delete FORM_ASSUMPTION(*itr);
+  }
 }
 
 //Adds a statement form that some antecedent must match for this inference rule
 //to be used.
-void InferenceRule::addRequiredForm(const char* req)
-{ required_forms.push_back(new StatementTree(req)); }
+void InferenceRule::addRequiredForm(const char* statement, const char* assumption)
+{
+  required_forms.push_back(form_pair(new StatementTree(assumption),
+    new StatementTree(statement)));
+}
 
 //Returns true if and only if the given consequent & antecedents can be matched
 //to this inference rule's consequent form & required antecedent forms with none
@@ -51,48 +59,29 @@ bool InferenceRule::isJustified(StatementTree& con, ant_list& ant)
   return result;
 }
 
-//Attempts to match the given antecedent to some required form (contingent on
-//previously bound sentence variables). On a successful match, continues on to
-//the next antecedent (including any newly bound variables). If all antecedents
-//can be matched to required forms with one set of variable bindings, returns
-//true
-/*bool InferenceRule::findFormsForAntecedents(ant_list::iterator begin,
-  ant_list::iterator end, bind_map& binds)
-{
-  if(begin == end) return true;
-    
-  bind_map temp_binds(binds);
-  
-  tree_list::iterator form = required_forms.begin();
-  for(; form != required_forms.end(); form++)
-  {
-    if(*form == NULL) return false;
-    
-    bool result = match((*begin)->getStatementData(), *form, temp_binds);
-    ant_list::iterator next = begin;
-    next++;
-    result = result && findFormsForAntecedents(next, end, temp_binds);
-    removeNewlyBoundForms(temp_binds, binds);
-    if(result) return true;
-  }
-  return false;
-}*/
-//MUST REQUIRE ALL FORMS TO BE MATCHED
-
-//Attempts to match the given required antecedent form to some actual antecedent,
-//contingent on previously bound sentence variables. On a successful match,
-//continues to the next required form. If all required forms have a corresponding
-//antecedent, returns true iff there are no unused antecedents.
-bool InferenceRule::findAntecedentsForForms(tree_list::iterator form, 
+bool InferenceRule::findAntecedentsForForms(list<form_pair>::iterator form, 
   ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
   //At the end, check if any antecedents were unused.
   if(form == required_forms.end()) return checkAntecedentRelevance(ant_usage);
   
+  if(FORM_ASSUMPTION(*form)==NULL)
+    return findAntecedentsForBasicForm(form, ant, binds, ant_usage);
+  else
+    return findAntecedentsForSubProof(form, ant, binds, ant_usage);
+}
+
+//Attempts to match the given required antecedent form to some actual antecedent,
+//contingent on previously bound sentence variables. On a successful match,
+//continues to the next required form. If all required forms have a corresponding
+//antecedent, returns true iff there are no unused antecedents.
+bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form, 
+  ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
+{
   //The copy of the variable binding map is so new bindings can be removed if
   //a branch doesn't work out.
   bind_map temp_binds(binds);
-  tree_list::iterator next_form = form;
+  list<form_pair>::iterator next_form = form;
   next_form++;
   
   //Try each antecedent for this form.
@@ -100,10 +89,10 @@ bool InferenceRule::findAntecedentsForForms(tree_list::iterator form,
   {
     if(*itr == NULL) return false;
     StatementTree* ant_data = (*itr)->getStatementData();
-    if(ant_data == NULL) return false;
+    if(ant_data == NULL) continue; //Statement was a subproof
     
     //Attempt to match
-    bool result = match(ant_data, *form, temp_binds);
+    bool result = match(ant_data, FORM_STATEMENT(*form), temp_binds);
     if(result)
     {
       //If successful, move on to the next required form.
@@ -111,8 +100,57 @@ bool InferenceRule::findAntecedentsForForms(tree_list::iterator form,
       result = findAntecedentsForForms(next_form, ant, temp_binds, ant_usage);
       ant_usage[*itr]--;
     }
-    //result = result && findAntecedentsForForms(next_form, ant, temp_binds);
+    
     removeNewlyBoundForms(temp_binds, binds);
+    if(result) return true;
+  }
+  return false;
+}
+
+bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form, 
+  ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
+{
+  //The copy of the variable binding map is so new bindings can be removed if
+  //a branch doesn't work out.
+  bind_map statement_binds(binds);
+  list<form_pair>::iterator next_form = form;
+  next_form++;
+  
+  for(ant_list::iterator itr = ant.begin(); itr != ant.end(); itr++)
+  {
+    if(*itr == NULL) return false;
+    StatementTree* assumption = (*itr)->getAssumption();
+    statement_set* contents = (*itr)->getSubproofContents();
+    if(assumption == NULL) continue; //Statement wasn't a subproof
+    
+    bool result = match(assumption, FORM_ASSUMPTION(*form), statement_binds);
+    if(!result) //Assumption didn't match
+    {
+      removeNewlyBoundForms(statement_binds, binds);
+      continue;
+    }
+    
+    bind_map substatement_binds(statement_binds);
+    statement_set::iterator sub_itr = contents->begin();
+    for(; sub_itr != contents->end(); itr++)
+    {
+      StatementTree* sub_statement = (*sub_itr)->getStatementData();
+      if(sub_statement == NULL) continue;
+      
+      result = match(sub_statement, FORM_STATEMENT(*form), substatement_binds);
+      if(result)
+      {
+        ant_usage[*itr]++;
+        result = findAntecedentsForForms(next_form, ant, substatement_binds,
+          ant_usage);
+        ant_usage[*itr]--;
+      }
+      
+      removeNewlyBoundForms(substatement_binds, statement_binds);
+      if(result) break;
+    }
+    
+    removeNewlyBoundForms(statement_binds, binds);
     if(result) return true;
   }
   return false;

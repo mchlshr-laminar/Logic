@@ -6,18 +6,29 @@ class InferenceRule;
 #include "Justification.hpp"
 #include "../Statements/StatementTree.hpp"
 #include "../Statements/ProofStatement.hpp"
+#include <utility>
+#include <list>
+
+typedef std::pair<StatementTree*, StatementTree*> form_pair;
+#define FORM_ASSUMPTION(x) (x).first
+#define FORM_STATEMENT(x) (x).second
 
 class InferenceRule : public Justification
 {
   private:
   StatementTree result_form;
-  tree_list required_forms;
+  //tree_list required_forms;
+  std::list<form_pair> required_forms;
   
   bool match(StatementTree* target, StatementTree* form, bind_map& binds);
-  //bool findFormsForAntecedents(ant_list::iterator begin, ant_list::iterator end,
-  //  bind_map& binds);
-  bool findAntecedentsForForms(tree_list::iterator form, ant_list& ant,
+  
+  bool findAntecedentsForForms(std::list<form_pair>::iterator form, ant_list& ant,
     bind_map& binds, statement_usage_map& ant_usage);
+  bool findAntecedentsForBasicForm(std::list<form_pair>::iterator form, ant_list& ant,
+    bind_map& binds, statement_usage_map& ant_usage);
+  bool findAntecedentsForSubProof(std::list<form_pair>::iterator form, ant_list& ant,
+    bind_map& binds, statement_usage_map& ant_usage);
+  
   bool checkAntecedentRelevance(statement_usage_map& ant_usage);
   
   public:
@@ -27,7 +38,7 @@ class InferenceRule : public Justification
   
   ~InferenceRule();
   
-  void addRequiredForm(const char* req);
+  void addRequiredForm(const char* statement, const char* assumption=NULL);
   
   bool isJustified(StatementTree& con, ant_list& ant);
 };

@@ -3,12 +3,13 @@
 
 class SubProof;
 
-#include "ProofStatement.hpp";
+#include "ProofStatement.hpp"
 #include "../Justifications/Justification.hpp"
 
 class SubProof : public ProofStatement
 {
   private:
+  statement_set contents;
   
   public:
   SubProof(const char* input) : ProofStatement(input)
@@ -23,7 +24,10 @@ class SubProof : public ProofStatement
   //parent's assumptions?
   bool isJustified();
   
+  statement_set* getSubproofContents();
+  
   bool toggleAntecedent(ProofStatement* ant);
+  bool toggleChild(ProofStatement* ch);
 };
 
 #endif
