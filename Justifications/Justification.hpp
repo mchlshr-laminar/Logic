@@ -3,6 +3,7 @@
 
 #include <map>
 #include <list>
+#include <cstring>
 
 class Justification;
 
@@ -28,6 +29,22 @@ class Justification
   void removeBoundForms(bind_map& binds);
   void removeNewlyBoundForms(bind_map& new_binds, bind_map& old_binds);
 };
+
+class Assumption : public Justification
+{
+  public:
+  Assumption() : Justification("Assumed")
+  {}
+  
+  bool isJustified(StatementTree& con, ant_list& ant)
+  { return ant.size() == 0; }
+}
+
+class JustificationComp
+{
+  bool operator()(Justification& j1, Justification& j2)
+  { return strcmp(j1.getName(), j2,getName()) < 0; }
+}
 
 #endif
 

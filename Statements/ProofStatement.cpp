@@ -93,6 +93,13 @@ bool ProofStatement::toggleAntecedent(ProofStatement* ant)
   return false;
 }
 
+void ProofStatement::setParent(ProofStatement* new_parent)
+{
+  if(parent != NULL) parent->toggleChild(this);
+  if(new_parent != NULL) new_parent->toggleChild(this);
+  parent = new_parent;
+}
+
 bool ProofStatement::toggleChild(ProofStatement* ch)
 { return false; }
 

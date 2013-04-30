@@ -40,6 +40,9 @@ class ProofStatement
   void rewrite(StatementTree* input);
   void setJustification(Justification* new_reason);
   virtual bool toggleAntecedent(ProofStatement* ant);
+  void setParent(ProofStatement* new_parent);
+  
+  protected:
   virtual bool toggleChild(ProofStatement* ch);
 };
 
