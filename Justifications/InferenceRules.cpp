@@ -23,8 +23,13 @@ InferenceRule::~InferenceRule()
 //to be used.
 void InferenceRule::addRequiredForm(const char* statement, const char* assumption)
 {
-  required_forms.push_back(form_pair(new StatementTree(assumption),
-    new StatementTree(statement)));
+  if(assumption == NULL)
+    required_forms.push_back(form_pair(NULL, new StatementTree(statement)));
+  else
+  {
+    required_forms.push_back(form_pair(new StatementTree(assumption),
+      new StatementTree(statement)));
+  }
 }
 
 //Returns true if and only if the given consequent & antecedents can be matched
@@ -110,6 +115,7 @@ bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form,
 bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form, 
   ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
+  cerr << "subproof form\n";
   //The copy of the variable binding map is so new bindings can be removed if
   //a branch doesn't work out.
   bind_map statement_binds(binds);
@@ -132,7 +138,8 @@ bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form,
     
     bind_map substatement_binds(statement_binds);
     statement_set::iterator sub_itr = contents->begin();
-    for(; sub_itr != contents->end(); itr++)
+    result = false;
+    for(; sub_itr != contents->end(); sub_itr++)
     {
       StatementTree* sub_statement = (*sub_itr)->getStatementData();
       if(sub_statement == NULL) continue;

@@ -1,4 +1,9 @@
 #include "ProofStatement.hpp"
+#include <iostream>
+
+using std::cout;
+using std::cerr;
+using std::endl;
 
 ProofStatement::ProofStatement(const char* input) : parent(NULL), reason(NULL)
 { data = new StatementTree(input); }
@@ -47,6 +52,9 @@ bool ProofStatement::antecedentsAllowable()
 ProofStatement* ProofStatement::getParent()
 { return parent; }
 
+statement_set* ProofStatement::getSubproofContents()
+{ return NULL; }
+
 int ProofStatement::getLineIndex()
 { return line_index; }
 
@@ -84,4 +92,7 @@ bool ProofStatement::toggleAntecedent(ProofStatement* ant)
   antecedents.push_back(ant);
   return false;
 }
+
+bool ProofStatement::toggleChild(ProofStatement* ch)
+{ return false; }
 
