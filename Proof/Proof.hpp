@@ -7,42 +7,45 @@
 #include "../Justifications/InferenceRules.hpp"
 #include "../Justifications/EquivalenceRules.hpp"
 #include <cstring>
-#include <vector>
 #include <map>
+#include <vector>
 
 class Proof;
 
+class StringMapper
+{
+  bool operator()(char* str1, char* str2)
+  { return strcmp(str1,str2) < 0; }
+};
+
 typedef std::vector<ProofStatement*> proof_list;
-typedef std::map<char*, Justification*> justification_map;
+typedef std::map<char*, Justification*, StringMapper> justification_map;
 
 class Proof
 {
   private:
-  justification_map rules;
-  proof_list statements;
-  int last_premise;
   int current_position;
-  int insert_position;
-  ProofStatement* current_subproof;
+  int last_premise;
+  proof_list proof_data;
+  justification_map rules;
   Assumption premise_just;
   
   public:
   Proof();
   ~Proof();
   
-  void addStatement(const char* statement_string);
+  void setPosition(int new_position);
+  void setStatement(const char* statement_string);
+  
+  void addLine();
   void setJustification(const char* justification_name);
-  void toggleAntecedent(ProofStatement* antecedent);
   void toggleAntecedent(int antecedent_index);
   
-  void addPremise(const char* premise_string);
+  void addPremiseLine();
   
-  void addSubproof(const char* assumption_string);
-  void exitSubproof();
-  
-  private:
-  int wInc(int index);
-}
+  void addSubproofLine();
+  void endSubproof();
+};
 
 #endif
 

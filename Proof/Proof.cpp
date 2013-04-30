@@ -5,90 +5,101 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-Proof::Proof() : last_premise(-1), current_position(-1),
-  insert_position(0), current_subproof(NULL)
+Proof::Proof() : current_position(-1), last_premise(-1)
 {
+  //ADD JUSTIFICATIONS
 }
 
 Proof::~Proof()
 {
+  for(int i = 0; i < proof_data.size(); i++)
+    delete proof_data[i];
   for(justification_map::iterator itr = rules.begin(); itr != rules.end(); itr++)
   {
     delete [] itr->first;
     delete itr->second;
   }
-  for(proof_list::iterator itr = statements.begin(); itr != statements.end(); itr++)
-    delete *itr;
 }
 
-int Proof::wInc(int index)
-{ return (index <= statements.size())?(index + 1):0; }
-
-void Proof::addStatement(const char* statement_string)
+void Proof::setPosition(int new_position)
 {
-  //all statements go after the premises.
-  if(insert_position <= last_premise)
-  {
-    current_position = last_premise;
-    insert_position = wInc(current_position);
-  }
-  proof_list::iterator ins_itr = statements.begin()+insert_position;
-  ProofStatement* new_statement = new ProofStatement(statement_string);
-  new_statement->setParent(current_subproof);
-  statements.insert(ins_itr, new_statement);
+  if(new_position >= -1 && new_position < proof_data.size())
+    current_position = new_position;
+}
+
+void Proof::setStatement(const char* statement_string);
+{
+  if(current_position == -1) return; //Shouldn't ever be >= size.
   
-  current_position = insert_position; //There may be subproofs
-  insert_position++;
+  proof_data[current_position]->rewrite(statement_string);
+}
+
+void Proof::addLine()
+{
+  if(current_position < last_premise) current_position = last_premise;
+  //Premises before derivation
+  
+  ProofStatement* new_statement = new ProofStatement("");
+  new_statement->setParent(proof_data[current_position]->getParent());
+  
+  proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
+  proof_data.insert(ins_pos, new_statement);
+  current_position++;
 }
 
 void Proof::setJustification(const char* justification_name)
 {
   if(current_position <= last_premise) return;
   
-  justification_map::iterator position = rules.find(justification_name);
-  if(position != rules.end())
-    statements[current_position]->setJustification(*position);
-}
-
-void Proof::toggleAntecedent(ProofStatement* antecedent)
-{
-  if(current_position <= last_premise) return;
-  
-  //Check position in proof?
-  statements[current_position]->toggleAntecedent(antecedent);
+  justification_map::iterator pos = rules.find(justification_name);
+  if(pos != rules.end())
+    proof_data[current_position]->setJustification(*itr);
 }
 
 void Proof::toggleAntecedent(int antecedent_index)
 {
-  if(current_position <= last_premise) return;
-  if(antecedent_index >= current_position) return;
-  if(antecedent_index < 0 || antecedent_index >= statements.size()) return;
+  if(antecedent_index < 0 || antecedent_index >= proof_data.size()) return;
+  if(current_position <= last_premise || antecedent_index <= current_position)
+    return;
   
-  statements[current_position]->toggleAntecedent(statements[antecedent_index]);
+  proof_data[current_position]->toggleAntecedent(proof_data[antecedent_index]);
 }
 
-void Proof::addPremise(const char* premise_string)
+void Proof::addPremiseLine()
 {
-  ProofStatement* new_premise = new ProofStatement(premise_string);
-  new_premise->setJustification(&premise_just);
-  statements.push_front(new_premise);
-  last_premise++;
+  if(current_position > last_premise) current_position = last_premise;
+  //Premises before derivation.
+  
+  ProofStatement* new_premise = new ProofStatement("");
+  new_statement->setJustification(&premise_just);
+  
+  proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
+  proof_data.insert(ins_pos, new_premise);
   current_position++;
-  insert_position++;
+  last_premise++;
 }
 
-void Proof::addSubproof(const char* assumption_string)
+void Proof::addSubproofLine()
 {
-  SubProof* new_subproof = new SubProof(assumption_string);
-  new_subproof->setParent(current_subproof);
+  if(current_position < last_premise) current_position = last_premise;
+  //Premises before derivation
   
-  current_position = insert_position;
-  insert_position++;
-  current_subproof = new_subproof;
+  SubProof* new_proof = new SubProof("");
+  new_proof->setParent(proof_data[current_position]->getParent());
+  
+  proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
+  proof_data.insert(ins_pos, new_statement);
+  current_position++;
 }
 
-void Proof::exitSubproof()
+void Proof::endSubproof()
 {
-  //DO STUFF
+  if(current_position == -1 || proof_data[current_position]->getParent() == NULL)
+    return;
+  
+  addLine();
+  ProofStatement* new_parent = proof_data[current_position]->getParent();
+  new_parent = new_parent->getParent();
+  proof_data[current_position]->setParent(new_parent);
 }
 
