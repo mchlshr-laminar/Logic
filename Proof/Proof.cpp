@@ -12,7 +12,7 @@ Proof::Proof() : current_position(-1), last_premise(-1)
 
 Proof::~Proof()
 {
-  for(int i = 0; i < proof_data.size(); i++)
+  for(unsigned int i = 0; i < proof_data.size(); i++)
     delete proof_data[i];
   for(justification_map::iterator itr = rules.begin(); itr != rules.end(); itr++)
   {
@@ -23,11 +23,11 @@ Proof::~Proof()
 
 void Proof::setPosition(int new_position)
 {
-  if(new_position >= -1 && new_position < proof_data.size())
+  if(new_position >= -1 && new_position < (int)(proof_data.size()))
     current_position = new_position;
 }
 
-void Proof::setStatement(const char* statement_string);
+void Proof::setStatement(const char* statement_string)
 {
   if(current_position == -1) return; //Shouldn't ever be >= size.
   
@@ -47,18 +47,18 @@ void Proof::addLine()
   current_position++;
 }
 
-void Proof::setJustification(const char* justification_name)
+void Proof::setJustification(char* justification_name)
 {
   if(current_position <= last_premise) return;
   
   justification_map::iterator pos = rules.find(justification_name);
   if(pos != rules.end())
-    proof_data[current_position]->setJustification(*itr);
+    proof_data[current_position]->setJustification(pos->second);
 }
 
 void Proof::toggleAntecedent(int antecedent_index)
 {
-  if(antecedent_index < 0 || antecedent_index >= proof_data.size()) return;
+  if(antecedent_index < 0 || antecedent_index >= (int)proof_data.size()) return;
   if(current_position <= last_premise || antecedent_index <= current_position)
     return;
   
@@ -71,7 +71,7 @@ void Proof::addPremiseLine()
   //Premises before derivation.
   
   ProofStatement* new_premise = new ProofStatement("");
-  new_statement->setJustification(&premise_just);
+  new_premise->setJustification(&premise_just);
   
   proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
   proof_data.insert(ins_pos, new_premise);
@@ -88,7 +88,7 @@ void Proof::addSubproofLine()
   new_proof->setParent(proof_data[current_position]->getParent());
   
   proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
-  proof_data.insert(ins_pos, new_statement);
+  proof_data.insert(ins_pos, new_proof);
   current_position++;
 }
 

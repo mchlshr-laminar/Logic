@@ -14,6 +14,7 @@ class Proof;
 
 class StringMapper
 {
+  public:
   bool operator()(char* str1, char* str2)
   { return strcmp(str1,str2) < 0; }
 };
@@ -38,7 +39,7 @@ class Proof
   void setStatement(const char* statement_string);
   
   void addLine();
-  void setJustification(const char* justification_name);
+  void setJustification(char* justification_name);
   void toggleAntecedent(int antecedent_index);
   
   void addPremiseLine();

@@ -38,13 +38,7 @@ class Assumption : public Justification
   
   bool isJustified(StatementTree& con, ant_list& ant)
   { return ant.size() == 0; }
-}
-
-class JustificationComp
-{
-  bool operator()(Justification& j1, Justification& j2)
-  { return strcmp(j1.getName(), j2,getName()) < 0; }
-}
+};
 
 #endif
 
