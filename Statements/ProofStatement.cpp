@@ -22,32 +22,12 @@ bool ProofStatement::containsResult(StatementTree* match)
 
 bool ProofStatement::isJustified()
 {
-  if(!data->isValid() || reason == NULL || !antecedentsAllowable()) return false;
+  if(!data->isValid() || reason == NULL /*|| !antecedentsAllowable()*/) return false;
   return reason->isJustified(*data, antecedents);
 }
 
-bool ProofStatement::antecedentsAllowable()
-{
-  for(ant_list::iterator itr = antecedents.begin(); itr != antecedents.end(); itr++)
-  {
-    if(*itr == NULL) return false;
-    //if((*itr)->line_index >= line_index) return false; //The line was after this line
-    
-    ProofStatement* target = (*itr)->parent;
-    bool target_found = false;
-    for(ProofStatement* traveller = parent; ; traveller = traveller->parent)
-    {
-      if(traveller == target)
-      {
-        target_found = true;
-        break;
-      }
-      if(traveller == NULL) break;
-    }
-    if(!target_found) return false; //The line was in a subproof.
-  }
-  return true;
-}
+Justification* ProofStatement::getJustification()
+{ return reason; }
 
 ProofStatement* ProofStatement::getParent()
 { return parent; }
@@ -80,6 +60,8 @@ void ProofStatement::setJustification(Justification* new_reason)
 //there, removes it if it was. Returns true if it was removed.
 bool ProofStatement::toggleAntecedent(ProofStatement* ant)
 {
+  ant = getRelevantAncestor(ant);
+  
   if(ant == NULL) return false;
   for(ant_list::iterator itr = antecedents.begin(); itr != antecedents.end(); itr++)
   {
@@ -100,6 +82,35 @@ void ProofStatement::setParent(ProofStatement* new_parent)
   parent = new_parent;
 }
 
+void ProofStatement::setLineIndex(int i)
+{ line_index = i; }
+
 bool ProofStatement::toggleChild(ProofStatement* ch)
 { return false; }
 
+ProofStatement* ProofStatement::getRelevantAncestor(ProofStatement* antecedent)
+{
+  if(antecedent == NULL) return NULL;
+  if(antecedentAllowable(antecedent)) return antecedent;
+  return getRelevantAncestor(antecedent->parent);
+}
+
+bool ProofStatement::antecedentAllowable(ProofStatement* ant)
+{
+  if(ant == NULL) return false;
+  //if((*itr)->line_index >= line_index) return false; //The line was after this line
+  
+  ProofStatement* target = ant->parent;
+  bool target_found = false;
+  for(ProofStatement* traveller = parent; ; traveller = traveller->parent)
+  {
+    if(traveller == target)
+    {
+      target_found = true;
+      break;
+    }
+    if(traveller == NULL) break;
+  }
+  if(!target_found) return false; //The line was in a subproof.
+  return true;
+}

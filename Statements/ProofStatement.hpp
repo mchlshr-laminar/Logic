@@ -21,8 +21,6 @@ class ProofStatement
   StatementTree* data;
   ant_list antecedents;
   
-  bool antecedentsAllowable();
-  
   public:
   ProofStatement(const char* input);
   ProofStatement(StatementTree* input);
@@ -32,18 +30,22 @@ class ProofStatement
   virtual bool containsResult(StatementTree* match);
   virtual bool isJustified();
   
+  Justification* getJustification();
   ProofStatement* getParent();
   virtual statement_set* getSubproofContents();
   int getLineIndex();
   
-  void rewrite(const char* input);
-  void rewrite(StatementTree* input);
+  virtual void rewrite(const char* input);
+  virtual void rewrite(StatementTree* input);
   void setJustification(Justification* new_reason);
   virtual bool toggleAntecedent(ProofStatement* ant);
   void setParent(ProofStatement* new_parent);
+  void setLineIndex(int i);
   
   protected:
   virtual bool toggleChild(ProofStatement* ch);
+  ProofStatement* getRelevantAncestor(ProofStatement* antecedent);
+  bool antecedentAllowable(ProofStatement* antecedent);
 };
 
 #endif

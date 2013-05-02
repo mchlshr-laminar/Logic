@@ -7,8 +7,6 @@ using std::list;
 //Parses the given string into a tree
 StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VALIDITY_UNKNOWN)
 {
-  //std::cout << input << std::endl;
-  
   atom_name = new char[strlen(input)+1];
   strcpy(atom_name, input);
   stripParens(atom_name);
@@ -20,13 +18,13 @@ StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VA
   char* right = new char[strlen(atom_name)-operator_pos];
   strncpy(left, atom_name, operator_pos);
   strcpy(right, atom_name+operator_pos+1);
-  //std::cout << "op " << node_type << ", left " << left << ", right " << right << std::endl;
   delete [] atom_name;
   atom_name = NULL;
   //Check valid?
   
   children.push_front(new StatementTree(right));
-  if(strlen(left) != 0) children.push_front(new StatementTree(left));
+  if(strlen(left) != 0 && node_type != NOT) children.push_front(new StatementTree(left));
+  //Somehow negations were having non-empty left strings.
   
   consolidateNegation();
 }

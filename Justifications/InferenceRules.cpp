@@ -115,7 +115,6 @@ bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form,
 bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form, 
   ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
-  cerr << "subproof form\n";
   //The copy of the variable binding map is so new bindings can be removed if
   //a branch doesn't work out.
   bind_map statement_binds(binds);

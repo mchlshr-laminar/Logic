@@ -9,22 +9,27 @@ class SubProof;
 class SubProof : public ProofStatement
 {
   private:
+  static Assumption subproof_assumption;
   statement_set contents;
+  ProofStatement* assumption;
   
   public:
-  SubProof(const char* input) : ProofStatement(input)
-  {}
-  SubProof(StatementTree* input) : ProofStatement(input)
-  {}
+  SubProof(const char* input);
+  SubProof(StatementTree* input);
+  ~SubProof();
   
   StatementTree* getStatementData();
   StatementTree* getAssumption();
+  ProofStatement* getAssumptionStatement();
   bool containsResult(StatementTree* match);
   //Maybe have antecedent be specific result, justification checks antecedent's
   //parent's assumptions?
   bool isJustified();
   
   statement_set* getSubproofContents();
+  
+  void rewrite(const char* input);
+  void rewrite(StatementTree* input);
   
   bool toggleAntecedent(ProofStatement* ant);
   bool toggleChild(ProofStatement* ch);
