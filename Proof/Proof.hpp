@@ -3,6 +3,7 @@
 
 #include "../Statements/ProofStatement.hpp"
 #include "../Statements/SubProof.hpp"
+#include "../Statements/StatementTree.hpp"
 #include "../Justifications/Justification.hpp"
 #include "../Justifications/InferenceRules.hpp"
 #include "../Justifications/EquivalenceRules.hpp"
@@ -32,6 +33,7 @@ class Proof
   proof_list proof_data;
   justification_map rules;
   Assumption premise_just;
+  StatementTree* goal;
   
   public:
   Proof();
@@ -39,6 +41,7 @@ class Proof
   
   void setPosition(int new_position);
   void setStatement(const char* statement_string);
+  void setGoal(const char* goal_string);
   
   void addLine();
   void setJustification(const char* justification_name);
@@ -48,6 +51,8 @@ class Proof
   
   void addSubproofLine();
   void endSubproof();
+  
+  void removeLine();
   
   bool verifyProof();
   void printProof();

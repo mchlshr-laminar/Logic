@@ -7,14 +7,14 @@ Assumption SubProof::subproof_assumption;
 
 SubProof::SubProof(const char* input) : ProofStatement(input)
 {
-  assumption = new ProofStatement(input);
+  assumption = new ProofStatement(input, true);
   assumption->setParent(this);
   assumption->setJustification(&subproof_assumption);
 }
 
 SubProof::SubProof(StatementTree* input) : ProofStatement(input)
 {
-  assumption = new ProofStatement(input);
+  assumption = new ProofStatement(input, true);
   assumption->setParent(this);
   assumption->setJustification(&subproof_assumption);
 }
@@ -35,10 +35,20 @@ bool SubProof::containsResult(StatementTree* match)
 { return false; }//Temp, though this function may not be needed.
 
 bool SubProof::isJustified()
-{ return assumption->getStatementData()->isValid(); }
+{
+  bool result = assumption->getStatementData()->isValid();
+  fail_type = (result)?NO_FAILURE:INVALID_STATEMENT;
+  return result;
+}
 
 statement_set* SubProof::getSubproofContents()
 { return &contents; }
+
+int SubProof::getLineIndex()
+{ return assumption->getLineIndex(); }
+
+char* SubProof::createDisplayString()
+{ return assumption->createDisplayString(); }
 
 void SubProof::rewrite(const char* input)
 { assumption->rewrite(input); }

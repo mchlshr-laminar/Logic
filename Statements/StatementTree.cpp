@@ -17,6 +17,7 @@ StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VA
   char* left = new char[operator_pos+1];
   char* right = new char[strlen(atom_name)-operator_pos];
   strncpy(left, atom_name, operator_pos);
+  left[operator_pos] = '\0'; //strncpy doesn't guarantee null character
   strcpy(right, atom_name+operator_pos+1);
   delete [] atom_name;
   atom_name = NULL;
@@ -24,7 +25,6 @@ StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VA
   
   children.push_front(new StatementTree(right));
   if(strlen(left) != 0 && node_type != NOT) children.push_front(new StatementTree(left));
-  //Somehow negations were having non-empty left strings.
   
   consolidateNegation();
 }

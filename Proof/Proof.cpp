@@ -11,7 +11,7 @@ using std::stack;
 using std::pair;
 using std::string;
 
-Proof::Proof() : current_position(-1), last_premise(-1)
+Proof::Proof() : current_position(-1), last_premise(-1), goal(NULL)
 {
   createJustifications();
 }
@@ -22,11 +22,16 @@ Proof::~Proof()
     delete proof_data[i];
   for(justification_map::iterator itr = rules.begin(); itr != rules.end(); itr++)
     delete itr->second;
+  if(goal != NULL) delete goal;
 }
 
 void Proof::setPosition(int new_position)
 {
-  if(new_position >= -1 && new_position < (int)(proof_data.size()))
+  if(new_position < -1)
+    current_position = -1;
+  else if(new_position >= (int)(proof_data.size()))
+    current_position = proof_data.size()-1;
+  else
     current_position = new_position;
 }
 
@@ -37,17 +42,20 @@ void Proof::setStatement(const char* statement_string)
   proof_data[current_position]->rewrite(statement_string);
 }
 
+void Proof::setGoal(const char* goal_string)
+{
+  if(goal != NULL) delete goal;
+  goal = new StatementTree(goal_string);
+}
+
 void Proof::addLine()
 {
   if(current_position < last_premise) current_position = last_premise;
   //Premises before derivation
   
   ProofStatement* new_statement = new ProofStatement("");
-  /*if(proof_data[current_position]->getAssumption() == NULL)
+  if(current_position >= 0 && current_position < (int)proof_data.size())
     new_statement->setParent(proof_data[current_position]->getParent());
-  else
-    new_statement->setParent(proof_data[current_position]);*/
-  new_statement->setParent(proof_data[current_position]->getParent());
   
   proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
   proof_data.insert(ins_pos, new_statement);
@@ -70,10 +78,8 @@ void Proof::toggleAntecedent(int antecedent_index)
     return;
   
   proof_data[current_position]->toggleAntecedent(proof_data[antecedent_index-1]);
-  cerr << "Statement " << proof_data[current_position]->getStatementData()->createDisplayString();
   StatementTree* t = proof_data[antecedent_index-1]->getStatementData();
   if(t == NULL) t = proof_data[antecedent_index-1]->getAssumption();
-  cerr << " Toggling " << t->createDisplayString() << endl;
 }
 
 void Proof::addPremiseLine()
@@ -84,7 +90,7 @@ void Proof::addPremiseLine()
   ProofStatement* new_premise = new ProofStatement("");
   new_premise->setJustification(&premise_just);
   
-  proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
+  proof_list::iterator ins_pos = proof_data.begin()+1+current_position;
   proof_data.insert(ins_pos, new_premise);
   current_position++;
   last_premise++;
@@ -96,11 +102,16 @@ void Proof::addSubproofLine()
   //Premises before derivation
   
   SubProof* new_proof = new SubProof("");
-  /*if(proof_data[current_position]->getAssumption() == NULL)
+  
+  if(current_position >= 0 && current_position < (int)proof_data.size())
+  {
     new_proof->setParent(proof_data[current_position]->getParent());
-  else
-    new_proof->setParent(proof_data[current_position]);*/
-  new_proof->setParent(proof_data[current_position]->getParent());
+    char* test =  proof_data[current_position]->getStatementData()->createDisplayString();
+    bool is_empty = strcmp(test, "") == 0;
+    delete [] test;
+    if(is_empty)
+      removeLine();
+  }
   
   proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
   proof_data.insert(ins_pos, new_proof->getAssumptionStatement());
@@ -110,7 +121,10 @@ void Proof::addSubproofLine()
 void Proof::endSubproof()
 {
   if(current_position == -1 || proof_data[current_position]->getParent() == NULL)
+  {
+    addLine();
     return;
+  }
   
   addLine();
   ProofStatement* new_parent = proof_data[current_position]->getParent();
@@ -118,18 +132,62 @@ void Proof::endSubproof()
   proof_data[current_position]->setParent(new_parent);
 }
 
+//MEMORY LEAKS
+void Proof::removeLine()
+{
+  if(current_position == -1) return;
+  if(current_position <= last_premise) last_premise--;
+  
+  proof_list::iterator pos = proof_data.begin()+current_position;
+  if((*pos)->isAssumption())
+  {
+    proof_list::iterator epos = pos;
+    for(; epos != proof_data.end(), (*epos)->getParent() == (*pos)->getParent(); epos++);
+    proof_data.erase(pos, epos);
+  }
+  else
+    proof_data.erase(pos);
+  current_position--;
+}
+
 bool Proof::verifyProof()
 {
   bool failed = false;
+  int goal_index = (goal==NULL)?0:-1;
   for(unsigned int i = 0; i < proof_data.size(); i++)
   {
     if(!proof_data[i]->isJustified())
     {
-      cout << "Line " << (i+1) << " is not justified\n";
+      cout << "Line " << (i+1) << " is not justified: ";
+      switch(proof_data[i]->getFailureType())
+      {
+        case ProofStatement::INVALID_STATEMENT:
+          cout << "statement is invalid\n";
+          break;
+        case ProofStatement::NO_JUSTIFICATION:
+          cout << "no inference/equivalence rule specified\n";
+          break;
+        case ProofStatement::JUSTIFICATION_FAILURE:
+          cout << "rule could not be applied\n";
+          break;
+        default: cout << "unspecified failure\n";
+          break;
+      }
+      
       failed = true;
+    }
+    if(goal_index == -1 && proof_data[i]->getParent()==NULL &&
+      proof_data[i]->getStatementData()->equals(*goal))
+    {
+      goal_index = i;
     }
   }
   if(!failed) cout << "All lines check out\n";
+  if(goal != NULL)
+  {
+    if(goal_index == -1) cout << "Goal not found\n";
+    else cout << "Goal found at line " << (goal_index+1) << "\n";
+  }
   return !failed;
 }
 
@@ -142,40 +200,18 @@ void Proof::printProof()
   stack<ProofStatement*> subproofs;
   for(; index <= last_premise; index++)
     printProofLine(index);
-  cout << "   |---\n";
+  cout << "   ]---\n";
   
   for(; index < (int)proof_data.size(); index++)
     printProofLine(index);
+    
+  if(goal != NULL)
+  {
+    char* goal_disp = goal->createDisplayString();
+    cout << "Goal: " << goal_disp << "\n";
+    delete [] goal_disp;
+  }
 }
-
-/*void Proof::printProofLine(int index, int depth)
-{
-  bool is_assump = false;
-  StatementTree* data = proof_data[index]->getAssumption();
-  if(data == NULL)
-  {
-    data = proof_data[index]->getStatementData();
-  }
-  else
-    is_assump = true;
-  
-  cout << (index+1) << ((index < 100)?((index < 10)?"  ":" "):"");
-  for(int d = 0; d <= depth; d++) cout << '|';
-  char* display_string = data->createDisplayString();
-  cout << display_string << "  ";
-  Justification* just = proof_data[index]->getJustification();
-  if(just == NULL) cout << "No justification\n";
-  else cout << just->getName() << "\n"; //ANTECEDENTS
-  
-  if(is_assump)
-  {
-    cout << "   ";
-    for(int d = 0; d <= depth; d++) cout << '|';
-    cout << "---\n";
-  }
-  
-  delete [] display_string;
-}*/
 
 void Proof::printProofLine(int index)
 {
@@ -183,14 +219,29 @@ void Proof::printProofLine(int index)
   ProofStatement* traveller = proof_data[index]->getParent();
   for(; traveller != NULL; depth++, traveller = traveller->getParent());
   
-  cout << (index+1) << ((index < 100)?((index < 10)?"  ":" "):"");
+  if(proof_data[index]->isAssumption() && index > last_premise)
+  {
+    cout << "   ";
+    for(int i = 0; i <= depth-1; i++)
+      cout << ']';
+    cout << "\n";
+  }
+  
+  
+  cout << (index+1) << ((index < 99)?((index < 9)?"  ":" "):"");
   for(int i = 0; i <= depth; i++)
-    cout << '|';
-  char* display_string = proof_data[index]->getStatementData()->createDisplayString();
-  cout << display_string << "  ";
-  Justification* just = proof_data[index]->getJustification();
-  if(just == NULL) cout << "No justification\n";
-  else cout << just->getName() << "\n"; //Antecedents
+    cout << ']';
+    
+  char* display_string = proof_data[index]->createDisplayString();
+  cout << " " << display_string << "\n";
+  
+  if(proof_data[index]->isAssumption() && index > last_premise)
+  {
+    cout << "   ";
+    for(int i = 0; i <= depth; i++)
+      cout << ']';
+    cout << "---\n";
+  }
 }
 
 void Proof::createJustifications()
@@ -300,7 +351,7 @@ void Proof::createJustifications()
   temp = new InferenceRule("c", "Proof by Cases");
   temp->addRequiredForm("a|b");
   temp->addRequiredForm("c", "a");
-  temp->addRequiredForm("c", "a");
+  temp->addRequiredForm("c", "b");
   rules[string("Proof by Cases")] = temp;
   
   //not
@@ -347,7 +398,13 @@ void Proof::createJustifications()
   temp = new InferenceRule("a>c", "Hypothetical Syllogism");
   temp->addRequiredForm("a>b");
   temp->addRequiredForm("b>c");
-  //rules["Hypothetical Syllogism"] = temp;
   rules[string("Hypothetical Syllogism")] = temp;
+  
+  temp = new InferenceRule("a", "Reiteration");
+  temp->addRequiredForm("a");
+  rules[string("Reiteration")] = temp;
+  
+  temp = new InferenceRule("a|!a", "Excluded Middle");
+  rules[string("Excluded Middle")] = temp;
 }
 

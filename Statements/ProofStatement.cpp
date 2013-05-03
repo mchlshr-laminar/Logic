@@ -1,14 +1,20 @@
 #include "ProofStatement.hpp"
 #include <iostream>
+#include <sstream>
+#include <string>
 
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::stringstream;
+using std::string;
 
-ProofStatement::ProofStatement(const char* input) : parent(NULL), reason(NULL)
+ProofStatement::ProofStatement(const char* input, bool is_assump) : parent(NULL),
+   reason(NULL), is_assumption(is_assump), fail_type(NO_FAILURE)
 { data = new StatementTree(input); }
 
-ProofStatement::ProofStatement(StatementTree* input) : parent(NULL), reason(NULL)
+ProofStatement::ProofStatement(StatementTree* input, bool is_assump) : parent(NULL),
+  reason(NULL), is_assumption(is_assump), fail_type(NO_FAILURE)
 { data = new StatementTree(*input); }
 
 StatementTree* ProofStatement::getStatementData()
@@ -22,9 +28,26 @@ bool ProofStatement::containsResult(StatementTree* match)
 
 bool ProofStatement::isJustified()
 {
-  if(!data->isValid() || reason == NULL /*|| !antecedentsAllowable()*/) return false;
-  return reason->isJustified(*data, antecedents);
+  //if(!data->isValid() || reason == NULL /*|| !antecedentsAllowable()*/) return false;
+  //return reason->isJustified(*data, antecedents);
+  if(!data->isValid())
+  {
+    fail_type = INVALID_STATEMENT;
+    return false;
+  }
+  if(reason == NULL)
+  {
+    fail_type = NO_JUSTIFICATION;
+    return false;
+  }
+  
+  bool result = reason->isJustified(*data, antecedents);
+  fail_type = (result)?NO_FAILURE:JUSTIFICATION_FAILURE;
+  return result;
 }
+
+int ProofStatement::getFailureType()
+{ return fail_type; }
 
 Justification* ProofStatement::getJustification()
 { return reason; }
@@ -37,6 +60,35 @@ statement_set* ProofStatement::getSubproofContents()
 
 int ProofStatement::getLineIndex()
 { return line_index; }
+
+bool ProofStatement::isAssumption()
+{ return is_assumption; }
+
+char* ProofStatement::createDisplayString()
+{
+  char* retval;
+  stringstream result;
+  
+  char* statement_display = data->createDisplayString();
+  result << statement_display << " ";
+  delete [] statement_display;
+  
+  if(reason == NULL)
+    result << "Not Justified";
+  else
+    result << reason->getName() << " ";
+    
+  ant_list::iterator itr = antecedents.begin();
+  for(; itr != antecedents.end(); itr++)
+    result << ((*itr)->getLineIndex()+1) << ", ";
+  
+  string temp = result.str();
+  int len = (antecedents.size()>0)?(temp.size()-2):temp.size();
+  retval = new char[len+1];
+  strncpy(retval, temp.c_str(), len);
+  retval[len] = '\0';
+  return retval;
+}
 
 void ProofStatement::rewrite(const char* input)
 {
@@ -52,7 +104,7 @@ void ProofStatement::rewrite(StatementTree* input)
 
 void ProofStatement::setJustification(Justification* new_reason)
 {
-  //Maybe bad.
+  if(is_assumption && reason != NULL) return;
   reason = new_reason;
 }
 

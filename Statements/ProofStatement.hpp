@@ -13,6 +13,11 @@ typedef std::set<ProofStatement*> statement_set;
 
 class ProofStatement
 {
+  public:
+  /*const static int NO_FAILURE = 0, INVALID_STATEMENT = 1, NO_JUSTIFICATION = 2,
+    JUSTIFICATION_FAILURE = 3;*/
+  enum failure_type_t { NO_FAILURE, INVALID_STATEMENT, NO_JUSTIFICATION,
+    JUSTIFICATION_FAILURE};
   protected:
   ProofStatement* parent;
   int line_index;
@@ -20,20 +25,25 @@ class ProofStatement
   Justification* reason;
   StatementTree* data;
   ant_list antecedents;
+  bool is_assumption;
+  failure_type_t fail_type;
   
   public:
-  ProofStatement(const char* input);
-  ProofStatement(StatementTree* input);
+  ProofStatement(const char* input, bool is_assump = false);
+  ProofStatement(StatementTree* input, bool is_assump = false);
   
   virtual StatementTree* getStatementData();
   virtual StatementTree* getAssumption();
   virtual bool containsResult(StatementTree* match);
   virtual bool isJustified();
+  int getFailureType();
   
   Justification* getJustification();
   ProofStatement* getParent();
   virtual statement_set* getSubproofContents();
-  int getLineIndex();
+  virtual int getLineIndex();
+  bool isAssumption();
+  virtual char* createDisplayString();
   
   virtual void rewrite(const char* input);
   virtual void rewrite(StatementTree* input);

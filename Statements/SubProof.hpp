@@ -22,11 +22,11 @@ class SubProof : public ProofStatement
   StatementTree* getAssumption();
   ProofStatement* getAssumptionStatement();
   bool containsResult(StatementTree* match);
-  //Maybe have antecedent be specific result, justification checks antecedent's
-  //parent's assumptions?
   bool isJustified();
   
   statement_set* getSubproofContents();
+  int getLineIndex();
+  char* createDisplayString();
   
   void rewrite(const char* input);
   void rewrite(StatementTree* input);
