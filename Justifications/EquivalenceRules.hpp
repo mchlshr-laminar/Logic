@@ -27,7 +27,7 @@ class EquivalenceRule : public Justification
   {}*/
   EquivalenceRule(const char* name) : Justification(name)
   {}
-  ~EquivalenceRule();
+  virtual ~EquivalenceRule();
   
   void addEquivalentPair(const char* form1, const char* form2);
   

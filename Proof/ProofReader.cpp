@@ -103,6 +103,8 @@ char* ProofReader::readLine()
   string tempstr = linestream.str();
   temp = new char[tempstr.size()+1];
   strcpy(temp, tempstr.c_str());
+  if(tempstr.size() > 0 && temp[tempstr.size()-1] == '\r')
+    temp[tempstr.size()-1]='\0'; //DOS File types
   return temp;
 }
 

@@ -17,6 +17,9 @@ ProofStatement::ProofStatement(StatementTree* input, bool is_assump) : parent(NU
   reason(NULL), is_assumption(is_assump), fail_type(NO_FAILURE)
 { data = new StatementTree(*input); }
 
+ProofStatement::~ProofStatement()
+{ delete data; }
+
 StatementTree* ProofStatement::getStatementData()
 { return data; }
 

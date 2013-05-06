@@ -36,7 +36,7 @@ class InferenceRule : public Justification
     result_form(result)
   {}
   
-  ~InferenceRule();
+  virtual ~InferenceRule();
   
   void addRequiredForm(const char* statement, const char* assumption=NULL);
   

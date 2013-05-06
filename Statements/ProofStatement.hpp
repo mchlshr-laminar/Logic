@@ -31,6 +31,7 @@ class ProofStatement
   public:
   ProofStatement(const char* input, bool is_assump = false);
   ProofStatement(StatementTree* input, bool is_assump = false);
+  virtual ~ProofStatement();
   
   virtual StatementTree* getStatementData();
   virtual StatementTree* getAssumption();

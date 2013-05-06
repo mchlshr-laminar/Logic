@@ -20,7 +20,7 @@ class Justification
   
   public:
   Justification(const char* name);
-  ~Justification();
+  virtual ~Justification();
   
   virtual bool isJustified(StatementTree& con, ant_list& ant) = 0;
   char* getName();

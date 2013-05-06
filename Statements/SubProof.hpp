@@ -16,7 +16,7 @@ class SubProof : public ProofStatement
   public:
   SubProof(const char* input);
   SubProof(StatementTree* input);
-  ~SubProof();
+  virtual ~SubProof();
   
   StatementTree* getStatementData();
   StatementTree* getAssumption();

@@ -12,7 +12,7 @@ class AggregateJustification : public Justification
   public:
   AggregateJustification(const char* name) : Justification(name)
   {}
-  ~AggregateJustification();
+  virtual ~AggregateJustification();
   
   bool isJustified(StatementTree& con, ant_list& ant);
   
