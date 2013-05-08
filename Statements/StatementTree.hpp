@@ -7,6 +7,8 @@ class StatementTree;
 typedef std::list<StatementTree*> tree_list;
 typedef std::list<StatementTree*>::iterator child_itr;
 
+//Parses & stores a sentence string as a tree. Any negation nodes are
+//consolidated into a negation flag in their child.
 class StatementTree
 {
   public:
@@ -20,7 +22,7 @@ class StatementTree
   std::list<StatementTree*> children;
   char* atom_name;
   bool is_affirmed;
-  int validity;
+  int validity; //Caches well-formedness
   
   void consolidateNegation();
   void consolidateChildren();

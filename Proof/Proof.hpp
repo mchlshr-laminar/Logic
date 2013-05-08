@@ -25,6 +25,7 @@ class StringMapper
 typedef std::vector<ProofStatement*> proof_list;
 typedef std::map<std::string, Justification*, StringMapper> justification_map;
 
+//Stores a proof
 class Proof
 {
   private:

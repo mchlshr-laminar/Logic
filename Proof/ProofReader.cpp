@@ -11,6 +11,7 @@ using std::ifstream;
 using std::map;
 using std::pair;
 
+//Sets the proof object to store data in.
 void ProofReader::setTarget(Proof* new_target)
 {
   target = new_target;
@@ -18,6 +19,7 @@ void ProofReader::setTarget(Proof* new_target)
   derivation_started = false;
 }
 
+//Reads the file with the given name to the proof object.
 bool ProofReader::readFile(const char* filename)
 {
   line_number_offset = 0;
@@ -88,6 +90,8 @@ bool ProofReader::readFile(const char* filename)
   return true;
 }
 
+//Reads, stores, and returns one line from the input file. Removes a
+//terminating '\r' if present to account for DOS filetypes.
 char* ProofReader::readLine()
 {
   linestream.str("");
@@ -108,6 +112,7 @@ char* ProofReader::readLine()
   return temp;
 }
 
+//Input line was a premise command.
 bool ProofReader::pre(char* input)
 {
   while(*input == ' ' || *input == '\t') input++;
@@ -119,6 +124,7 @@ bool ProofReader::pre(char* input)
   return true;
 }
 
+//input command was a line command
 bool ProofReader::lin(char* input)
 {
   while(*input == ' ' || *input == '\t') input++;
@@ -150,6 +156,7 @@ bool ProofReader::lin(char* input)
   return true;
 }
 
+//Input command was a subproof command
 bool ProofReader::sub(char* input)
 {
   while(*input == ' ' || *input == '\t') input++;
@@ -162,6 +169,7 @@ bool ProofReader::sub(char* input)
   return true;
 }
 
+//Et cetera
 bool ProofReader::end(char* input)
 {
   target->endSubproof();

@@ -4,6 +4,9 @@
 using std::pair;
 
 Assumption SubProof::subproof_assumption;
+//Static justification for subproof assumptions.
+
+//Most comments are in ProofStatement
 
 SubProof::SubProof(const char* input) : ProofStatement(input)
 {
@@ -31,9 +34,7 @@ StatementTree* SubProof::getAssumption()
 ProofStatement* SubProof::getAssumptionStatement()
 { return assumption; }
 
-bool SubProof::containsResult(StatementTree* match)
-{ return false; }//Temp, though this function may not be needed.
-
+//Subproofs are justified iff their assumption is well-formed
 bool SubProof::isJustified()
 {
   bool result = assumption->getStatementData()->isValid();
@@ -41,6 +42,8 @@ bool SubProof::isJustified()
   return result;
 }
 
+//Returns the set of statements in the subproof, including the
+//assumption
 statement_set* SubProof::getSubproofContents()
 { return &contents; }
 
@@ -50,6 +53,7 @@ int SubProof::getLineIndex()
 char* SubProof::createDisplayString()
 { return assumption->createDisplayString(); }
 
+//Rewriting a subproof means rewriting its assumption
 void SubProof::rewrite(const char* input)
 { assumption->rewrite(input); }
 

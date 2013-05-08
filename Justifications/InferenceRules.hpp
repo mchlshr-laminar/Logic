@@ -13,6 +13,7 @@ typedef std::pair<StatementTree*, StatementTree*> form_pair;
 #define FORM_ASSUMPTION(x) (x).first
 #define FORM_STATEMENT(x) (x).second
 
+//Checks justification based on an inference rule
 class InferenceRule : public Justification
 {
   private:

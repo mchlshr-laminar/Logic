@@ -6,6 +6,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+//Runs the program
 int main(int nargs, char** args)
 {
   if(nargs != 2)

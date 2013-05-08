@@ -15,6 +15,7 @@
 #define SUBPROOF_END_COMMAND "end"
 #define GOAL_DEF_COMMAND "gol "
 
+//Reads a proof from an input file.
 class ProofReader
 {
   private:

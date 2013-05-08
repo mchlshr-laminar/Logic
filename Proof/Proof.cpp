@@ -25,6 +25,7 @@ Proof::~Proof()
   if(goal != NULL) delete goal;
 }
 
+//Sets the current focus position for editing.
 void Proof::setPosition(int new_position)
 {
   if(new_position < -1)
@@ -35,6 +36,8 @@ void Proof::setPosition(int new_position)
     current_position = new_position;
 }
 
+//Sets the sentence of the focused statement by the given
+//string.
 void Proof::setStatement(const char* statement_string)
 {
   if(current_position == -1) return; //Shouldn't ever be >= size.
@@ -42,12 +45,16 @@ void Proof::setStatement(const char* statement_string)
   proof_data[current_position]->rewrite(statement_string);
 }
 
+//Sets the goal statement of this proof.
 void Proof::setGoal(const char* goal_string)
 {
   if(goal != NULL) delete goal;
   goal = new StatementTree(goal_string);
 }
 
+//Adds a new proof line after the focused one (or after the premises
+//if focus is on a premise line) and sets focus to the new line. This
+//line will be in the same subproof as the previously focused line.
 void Proof::addLine()
 {
   if(current_position < last_premise) current_position = last_premise;
@@ -62,6 +69,9 @@ void Proof::addLine()
   current_position++;
 }
 
+//Searches for the justification rule with the given name. If found and the
+//focused statement is not a premise/assumption, sets the statement's justification
+//to the found rule.
 void Proof::setJustification(const char* justification_name)
 {
   if(current_position <= last_premise) return;
@@ -71,6 +81,9 @@ void Proof::setJustification(const char* justification_name)
     proof_data[current_position]->setJustification(pos->second);
 }
 
+//Toggles whether or not the specified line is listed as an antecedent of the
+//focused line. Does nothing if focus is an assumption or premise or the specified
+//line is not before the focus.
 void Proof::toggleAntecedent(int antecedent_index)
 {
   if(antecedent_index <= 0 || antecedent_index > (int)proof_data.size()) return;
@@ -82,6 +95,8 @@ void Proof::toggleAntecedent(int antecedent_index)
   if(t == NULL) t = proof_data[antecedent_index-1]->getAssumption();
 }
 
+//Adds a premise line after the focused line (or at the end of the premises
+//if focus is not on a premise) and sets focus to the new line.
 void Proof::addPremiseLine()
 {
   if(current_position > last_premise) current_position = last_premise;
@@ -96,6 +111,12 @@ void Proof::addPremiseLine()
   last_premise++;
 }
 
+//Adds a new subproof assumption line (creating a new subproof). Will
+//be placed after the currently focused line, or after the premises if
+//focus is in the premises. Subproof's parent will be the same as the
+//previously focused line. Sets focus to the new assumption line.
+//If the focused line has an empty sentence, deletes the line & replaces
+//it.
 void Proof::addSubproofLine()
 {
   if(current_position < last_premise) current_position = last_premise;
@@ -118,6 +139,8 @@ void Proof::addSubproofLine()
   current_position++;
 }
 
+//Adds a new proof line as per AddLine, except that it will be in the current
+//subproof's parent. If the focused line is not in a subproof, does nothing.
 void Proof::endSubproof()
 {
   if(current_position == -1 || proof_data[current_position]->getParent() == NULL)
@@ -132,6 +155,7 @@ void Proof::endSubproof()
   proof_data[current_position]->setParent(new_parent);
 }
 
+//Removes the focused line and decrements the focus.
 //MEMORY LEAKS
 void Proof::removeLine()
 {
@@ -150,6 +174,7 @@ void Proof::removeLine()
   current_position--;
 }
 
+//Checks and prints if the proof works.
 bool Proof::verifyProof()
 {
   bool failed = false;
@@ -162,7 +187,7 @@ bool Proof::verifyProof()
       switch(proof_data[i]->getFailureType())
       {
         case ProofStatement::INVALID_STATEMENT:
-          cout << "statement is invalid\n";
+          cout << "sentence is not well-formed\n";
           break;
         case ProofStatement::NO_JUSTIFICATION:
           cout << "no inference/equivalence rule specified\n";
@@ -191,6 +216,7 @@ bool Proof::verifyProof()
   return !failed;
 }
 
+//Displays the proof.
 void Proof::printProof()
 {
   for(int i = 0; i < (int)proof_data.size(); i++)

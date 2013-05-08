@@ -14,6 +14,7 @@ AggregateJustification::~AggregateJustification()
     delete *itr;
 }
 
+//Checks if the given consequent is justified under any of the subrules.
 bool AggregateJustification::isJustified(StatementTree& con, ant_list& ant)
 {
   list<Justification*>::iterator itr = rules.begin();
@@ -27,6 +28,7 @@ bool AggregateJustification::isJustified(StatementTree& con, ant_list& ant)
   return false;
 }
 
+//Adds a subrule to check for.
 void AggregateJustification::addRule(Justification* new_rule)
 {
   if(new_rule == NULL) return;

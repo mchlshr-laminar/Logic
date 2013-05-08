@@ -11,6 +11,7 @@ typedef std::set<ProofStatement*> statement_set;
 #include "StatementTree.hpp"
 #include "../Justifications/Justification.hpp"
 
+//Represents one statement in the proof
 class ProofStatement
 {
   public:
@@ -35,7 +36,6 @@ class ProofStatement
   
   virtual StatementTree* getStatementData();
   virtual StatementTree* getAssumption();
-  virtual bool containsResult(StatementTree* match);
   virtual bool isJustified();
   int getFailureType();
   

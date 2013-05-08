@@ -13,6 +13,7 @@ class Justification;
 typedef std::map<char, StatementTree*> bind_map;
 typedef std::map<ProofStatement*, int> statement_usage_map;
 
+//Abstract base class for ways of justifying a statement
 class Justification
 {
   private:

@@ -76,6 +76,8 @@ void StatementTree::consolidateNegation()
 
 //Creates generalized conjunctions, disjunctions, and biconditionals when appropriate
 //by removing children & adopting those children's children.
+//Not currently used: generalized conjunction/disjunction would make application of
+//inference rules more difficult.
 void StatementTree::consolidateChildren()
 {  
   if(!isAssociative()) return;
@@ -93,15 +95,20 @@ void StatementTree::consolidateChildren()
   }
 }
 
+//Returns an iterator to the start of the list of children
 child_itr StatementTree::begin()
 { return children.begin(); }
 
+//Returns an iterator to the end of the list of children
 child_itr StatementTree::end()
 { return children.end(); }
 
+//Returns true if there is no negation flag attached to this node
 bool StatementTree::isAffirmed()
 { return is_affirmed; }
 
+//Returns true if this statement is syntactically acceptable/well
+//formed. Valid is a misnomer but is shorter.
 bool StatementTree::isValid()
 {
   if(validity == IS_VALID) return true;
@@ -128,6 +135,8 @@ bool StatementTree::isValid()
   //Not an atom, check presence & validity of children
   if(children.size() < 2)
   {
+    //Negation is the only type with one child & negation
+    //nodes shouldn't exist after tree creation.
     validity = IS_INVALID;
     return false;
   }
@@ -350,6 +359,8 @@ char StatementTree::typeOperator(int input)
   }
 }
 
+//For printing the sentence in a tree format. Not currently used except
+//for debugging.
 void StatementTree::temp(int depth)
 {
   for(int i = 0; i < depth; i++) std::cout << ' ';

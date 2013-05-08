@@ -19,6 +19,7 @@ EquivalenceRule::~EquivalenceRule()
   }
 }
 
+//Adds a pair of equivalent sentences which can be applied.
 void EquivalenceRule::addEquivalentPair(const char* form1, const char* form2)
 {
   equiv_pair new_equivalence(new StatementTree(form1), new StatementTree(form2));
@@ -37,41 +38,8 @@ bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
   return areEquivalent(&con, ant.front()->getStatementData());
 }
 
-//Returns whether or not the two given sentences are equivalent using only this
-//equivalence rule.
-/*bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
-{
-  if(tree1 == NULL || tree2 == NULL) return false;
-  
-  bind_map binds;
-  
-  //tree1 is of form 1 & tree2 is of form 2
-  matchFormOneNegation(tree1);
-  bool result = match(tree1, &form1, binds) && match(tree2, &form2, binds);
-  removeBoundForms(binds);
-  if(result) return true;
-  
-  //vice versa
-  matchFormOneNegation(tree2);
-  result = match(tree1, &form2, binds) && match(tree2, &form1, binds);
-  removeBoundForms(binds);
-  if(result) return true;
-  
-  //Root is the same type, check equivalence of children (or atom name if relevant)
-  if(tree1->nodeType() == tree2->nodeType() && tree1->isAffirmed() == tree2->isAffirmed())
-  {
-    if(tree1->nodeType() == StatementTree::ATOM) return tree1->equals(*tree2);
-    
-    child_itr itr1 = tree1->begin();
-    child_itr itr2 = tree2->begin();
-    for(; itr1 != tree1->end(), itr2 != tree2->end(); itr1++, itr2++)
-      if(!areEquivalent(*itr1, *itr2)) return false;
-    return itr1 == tree1->end() && itr2 == tree2->end();
-  }
-  
-  return false;
-}*/
-
+//Checks if the given sentences are equivalent using only the equivalences given to
+//this rule.
 bool EquivalenceRule::areEquivalent(StatementTree* tree1, StatementTree* tree2)
 {
   if(tree1 == NULL || tree2 == NULL) return false;

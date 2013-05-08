@@ -20,15 +20,16 @@ ProofStatement::ProofStatement(StatementTree* input, bool is_assump) : parent(NU
 ProofStatement::~ProofStatement()
 { delete data; }
 
+//Returns the sentence tree if this is a normal statement, null if this is a subproof
 StatementTree* ProofStatement::getStatementData()
 { return data; }
 
+//Returns the tree for the assumption of a subproof, null if this isnt a subproof
 StatementTree* ProofStatement::getAssumption()
 { return NULL; }
 
-bool ProofStatement::containsResult(StatementTree* match)
-{ return false; }
-
+//Returns true if this statement is a consequence of its antecedents by the stored
+//rule. sets the fail_type flag if it is not justified.
 bool ProofStatement::isJustified()
 {
   //if(!data->isValid() || reason == NULL /*|| !antecedentsAllowable()*/) return false;
@@ -49,6 +50,7 @@ bool ProofStatement::isJustified()
   return result;
 }
 
+//Returns the reason the most recently tested statement was not justified.
 int ProofStatement::getFailureType()
 { return fail_type; }
 
@@ -58,15 +60,20 @@ Justification* ProofStatement::getJustification()
 ProofStatement* ProofStatement::getParent()
 { return parent; }
 
+//Returns a set of all statements which are a child of this statement.
 statement_set* ProofStatement::getSubproofContents()
 { return NULL; }
 
 int ProofStatement::getLineIndex()
 { return line_index; }
 
+//Returns true iff this statement is a premise or an assumption for a
+//subproof.
 bool ProofStatement::isAssumption()
 { return is_assumption; }
 
+//Allocates, creates, and returns a string which represents this statement
+//(sentence, justification name, and antecedent line indices).
 char* ProofStatement::createDisplayString()
 {
   char* retval;
@@ -93,12 +100,14 @@ char* ProofStatement::createDisplayString()
   return retval;
 }
 
+//Replaces this statement's sentence with the given input.
 void ProofStatement::rewrite(const char* input)
 {
   delete data;
   data = new StatementTree(input);
 }
 
+//Replaces this statement's sentence with the given input.
 void ProofStatement::rewrite(StatementTree* input)
 {
   delete data;
@@ -130,6 +139,8 @@ bool ProofStatement::toggleAntecedent(ProofStatement* ant)
   return false;
 }
 
+//Makes this statement a child of the given parent by updating the parent
+//pointer & updating the child sets of both new & old parents.
 void ProofStatement::setParent(ProofStatement* new_parent)
 {
   if(parent != NULL) parent->toggleChild(this);
@@ -140,9 +151,13 @@ void ProofStatement::setParent(ProofStatement* new_parent)
 void ProofStatement::setLineIndex(int i)
 { line_index = i; }
 
+//Toggles whether or not the given statement is in the set of children
+//Is private, only used by setParent
 bool ProofStatement::toggleChild(ProofStatement* ch)
 { return false; }
 
+//Returns the closest ancestor of the given statement which would be admissable
+//as an antecedent of this statement (i.e. is not in a separate subproof).
 ProofStatement* ProofStatement::getRelevantAncestor(ProofStatement* antecedent)
 {
   if(antecedent == NULL) return NULL;
@@ -150,6 +165,9 @@ ProofStatement* ProofStatement::getRelevantAncestor(ProofStatement* antecedent)
   return getRelevantAncestor(antecedent->parent);
 }
 
+//Returns true if the parent of the given statement is an ancestor of this
+//statement, i.e. it is not in a subproof which would disallow it from use
+//as an antecedent
 bool ProofStatement::antecedentAllowable(ProofStatement* ant)
 {
   if(ant == NULL) return false;

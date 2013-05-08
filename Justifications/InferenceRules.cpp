@@ -64,6 +64,10 @@ bool InferenceRule::isJustified(StatementTree& con, ant_list& ant)
   return result;
 }
 
+//Attempts to match the given required antecedent form to some actual antecedent,
+//contingent on previously bound sentence variables. On a successful match,
+//continues to the next required form. If all required forms have a corresponding
+//antecedent, returns true iff there are no unused antecedents.
 bool InferenceRule::findAntecedentsForForms(list<form_pair>::iterator form, 
   ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
@@ -76,10 +80,8 @@ bool InferenceRule::findAntecedentsForForms(list<form_pair>::iterator form,
     return findAntecedentsForSubProof(form, ant, binds, ant_usage);
 }
 
-//Attempts to match the given required antecedent form to some actual antecedent,
-//contingent on previously bound sentence variables. On a successful match,
-//continues to the next required form. If all required forms have a corresponding
-//antecedent, returns true iff there are no unused antecedents.
+//Helper function for findAntecedentsForForms for when the form is not a
+//subproof form.
 bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form, 
   ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
@@ -112,6 +114,7 @@ bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form,
   return false;
 }
 
+//Helper function for findAntecedentsForForms for a subproof form.
 bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form, 
   ant_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
@@ -123,6 +126,7 @@ bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form,
   
   for(ant_list::iterator itr = ant.begin(); itr != ant.end(); itr++)
   {
+    //Iterate over antecedents
     if(*itr == NULL) return false;
     StatementTree* assumption = (*itr)->getAssumption();
     statement_set* contents = (*itr)->getSubproofContents();
@@ -140,6 +144,8 @@ bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form,
     result = false;
     for(; sub_itr != contents->end(); sub_itr++)
     {
+      //Iterate over children of antecedents to find the required statement
+      //within the subproof.
       StatementTree* sub_statement = (*sub_itr)->getStatementData();
       if(sub_statement == NULL) continue;
       

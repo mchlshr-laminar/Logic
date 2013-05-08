@@ -6,6 +6,8 @@ class SubProof;
 #include "ProofStatement.hpp"
 #include "../Justifications/Justification.hpp"
 
+//Represents a subproof. Is a subclass of ProofStatement so that
+//antecedents can be statements or subproofs.
 class SubProof : public ProofStatement
 {
   private:
@@ -21,7 +23,6 @@ class SubProof : public ProofStatement
   StatementTree* getStatementData();
   StatementTree* getAssumption();
   ProofStatement* getAssumptionStatement();
-  bool containsResult(StatementTree* match);
   bool isJustified();
   
   statement_set* getSubproofContents();

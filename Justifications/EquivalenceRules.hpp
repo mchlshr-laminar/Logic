@@ -11,6 +11,8 @@ class EquivalenceRule;
 
 typedef std::pair<StatementTree*, StatementTree*> equiv_pair;
 
+//Checks justification using an equivalence rule, i.e. can be applied
+//to subsentences and can be used in either direction.
 class EquivalenceRule : public Justification
 {
   private:
@@ -22,9 +24,6 @@ class EquivalenceRule : public Justification
   void matchFormOneNegation(StatementTree* target, equiv_pair& source);
   
   public:
-  /*EquivalenceRule(const char* f1, const char* f2, const char* name) : Justification(name),
-    form1(f1), form2(f2)
-  {}*/
   EquivalenceRule(const char* name) : Justification(name)
   {}
   virtual ~EquivalenceRule();
