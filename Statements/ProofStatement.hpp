@@ -37,7 +37,7 @@ class ProofStatement
   virtual StatementTree* getStatementData();
   virtual StatementTree* getAssumption();
   virtual bool isJustified();
-  int getFailureType();
+  failure_type_t getFailureType();
   
   Justification* getJustification();
   ProofStatement* getParent();

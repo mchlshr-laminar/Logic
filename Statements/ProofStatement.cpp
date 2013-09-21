@@ -50,8 +50,8 @@ bool ProofStatement::isJustified()
   return result;
 }
 
-//Returns the reason the most recently tested statement was not justified.
-int ProofStatement::getFailureType()
+//Returns the reason this statement is not justified.
+failure_type_t ProofStatement::getFailureType()
 { return fail_type; }
 
 Justification* ProofStatement::getJustification()

@@ -12,6 +12,7 @@ typedef std::list<StatementTree*>::iterator child_itr;
 class StatementTree
 {
   public:
+  //enum not used for node type for the sake of order of operations.
   const static int ATOM = 0, IFF = 1, IMPLIES = 2, OR = 3, AND = 4, NOT = 5;
   const static int OP_START = 1, OP_END = 5;
   const static int ONLY = 0, LEFT = 0, RIGHT = 1;
