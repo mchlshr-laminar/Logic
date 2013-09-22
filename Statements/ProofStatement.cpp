@@ -51,7 +51,7 @@ bool ProofStatement::isJustified()
 }
 
 //Returns the reason this statement is not justified.
-failure_type_t ProofStatement::getFailureType()
+ProofStatement::failure_type_t ProofStatement::getFailureType()
 { return fail_type; }
 
 Justification* ProofStatement::getJustification()
