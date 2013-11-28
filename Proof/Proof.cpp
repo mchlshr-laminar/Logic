@@ -1,4 +1,5 @@
 #include "Proof.hpp"
+#include "BuiltInRules.hpp"
 #include "../Statements/StatementTree.hpp"
 #include <iostream>
 #include <stack>
@@ -13,7 +14,8 @@ using std::string;
 
 Proof::Proof() : current_position(-1), last_premise(-1), goal(NULL)
 {
-  createJustifications();
+  //createJustifications();
+  rules = BuiltInRules::getRuleMap();
 }
 
 Proof::~Proof()
@@ -270,7 +272,7 @@ void Proof::printProofLine(int index)
   }
 }
 
-void Proof::createJustifications()
+/*void Proof::createJustifications()
 {
   EquivalenceRule* rule;
   //EQUIVALENCE RULES
@@ -432,5 +434,5 @@ void Proof::createJustifications()
   
   temp = new InferenceRule("a|!a", "Excluded Middle");
   rules[string("Excluded Middle")] = temp;
-}
+}*/
 

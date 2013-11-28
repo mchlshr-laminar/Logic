@@ -13,13 +13,13 @@ class BuiltInRules
 {
 	private:
 	static justification_map rules;
-	static bool rules_need_reading = true;
+	static bool rules_need_reading;
 	
 	static void readRulesFromFile();
-	static Justification* readRuleNode(rapidxml::xml_node rule_node);
-	static Justification* readEquivalenceRule(rapidxml::xml_node rule_node, char* rule_name);
-	static Justification* readInferenceRule(rapidxml::xml_node rule_node, char* rule_name);
-	static Justification* readAggregateRule(rapidxml::xml_node rule_node, char* rule_name);
+	static Justification* readRuleNode(rapidxml::xml_node<>* rule_node);
+	static Justification* readEquivalenceRule(rapidxml::xml_node<>* rule_node, char* rule_name);
+	static Justification* readInferenceRule(rapidxml::xml_node<>* rule_node, char* rule_name);
+	static Justification* readAggregateRule(rapidxml::xml_node<>* rule_node, char* rule_name);
 	
 	public:
 	static const justification_map& getRuleMap();

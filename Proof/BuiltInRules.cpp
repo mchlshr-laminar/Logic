@@ -6,12 +6,19 @@
 #include <string>
 #include <sstream>
 #include <unistd.h>
+#include <fcntl.h>
+#include <iostream>
 
 using std::stringstream;
 using std::string;
+using std::cerr;
+using std::endl;
 using rapidxml::xml_document;
 using rapidxml::xml_node;
 using rapidxml::xml_attribute;
+
+bool BuiltInRules::rules_need_reading = true;
+justification_map BuiltInRules::rules;
 
 //Creates the rule map from the XML input file.
 void BuiltInRules::readRulesFromFile()
@@ -20,11 +27,21 @@ void BuiltInRules::readRulesFromFile()
 	stringstream input_string;
 	char* input_buffer = new char[RULE_CHUNK_SIZE+1];
 	int fd = open(DEFAULT_RULES_FILENAME, O_RDONLY);
-	//Error check
+	if(fd == -1)
+	{
+		cerr << "Error: rules file " << DEFAULT_RULES_FILENAME << " could not be opened." << endl;
+		exit(1);
+	}
+	
 	int read_size;
-	while(read_size = read(fd, input_buffer, RULE_CHUNK_SIZE))
+	while( (read_size = read(fd, input_buffer, RULE_CHUNK_SIZE)) )
 	{
 		//TODO: if(read_size == -1) error
+		if(read_size == -1)
+		{
+			cerr << "Error: rules file was opened but couldn't be read." << endl;
+			exit(1);
+		}
 		input_buffer[read_size] = '\0';
 		input_string << input_buffer;
 	}
@@ -34,8 +51,15 @@ void BuiltInRules::readRulesFromFile()
 	input_buffer = new char[input_string.str().size()+1];
 	strcpy(input_buffer, input_string.str().c_str());
 	xml_document<> input_structure;
+	try
+	{
 	input_structure.parse<0>(input_buffer);
-	//TODO: Error check
+	}
+	catch(int e)
+	{
+		cerr << "Error: rules file could not be parsed, exception id " << e << endl;
+		exit(2);
+	}
 	delete [] input_buffer;
 	
 	//Create rules from nodes
@@ -44,24 +68,24 @@ void BuiltInRules::readRulesFromFile()
 		Justification* new_rule = readRuleNode(rule_node);
 		if(new_rule == NULL) continue;
 		
-		xml_attribute<>* rule_name = rule_node.first_attribute("rulename");
+		xml_attribute<>* rule_name = rule_node->first_attribute("rulename");
 		if(rule_name == NULL)
 		{
 			//TODO: Error or generate name?
 			delete new_rule;
 		}
 		else
-			rules[string(rule_name->value()] = new_rule;
+			rules[string(rule_name->value())] = new_rule;
 	}
 
 	rules_need_reading = false;
 }
 
 //Translates one XML node into a rule in the map.
-Justification* BuiltInRules::readRuleNode(xml_node rule_node)
+Justification* BuiltInRules::readRuleNode(xml_node<>* rule_node)
 {
 	char* rule_name = NULL;
-	xml_attribute<>* attr = rule_node.first_attribute("rulename")
+	xml_attribute<>* attr = rule_node->first_attribute("rulename");
 	if(attr == NULL)
 	{
 		rule_name = new char[13];
@@ -84,12 +108,12 @@ Justification* BuiltInRules::readRuleNode(xml_node rule_node)
 	return retval;
 }
 
-Justification* BuiltInRules::readEquivalenceRule(xml_node rule_node, char* rule_name)
+Justification* BuiltInRules::readEquivalenceRule(xml_node<>* rule_node, char* rule_name)
 {
 	bool has_added_pairs = false;
 	EquivalenceRule* created_rule = new EquivalenceRule(rule_name);
 	
-	for(xml_node<>* pair_node = rule_node.first_child("pair"); pair_node != NULL; pair_node = pair_node.next_sibling("pair"))
+	for(xml_node<>* pair_node = rule_node->first_node("pair"); pair_node != NULL; pair_node = pair_node->next_sibling("pair"))
 	{
 		xml_attribute<>* first_form = pair_node->first_attribute("form1");
 		xml_attribute<>* second_form = pair_node->first_attribute("form2");
@@ -108,14 +132,14 @@ Justification* BuiltInRules::readEquivalenceRule(xml_node rule_node, char* rule_
 	return (Justification*)created_rule;
 }
 
-Justification* BuiltInRules::readInferenceRule(xml_node rule_node, char* rule_name)
+Justification* BuiltInRules::readInferenceRule(xml_node<>* rule_node, char* rule_name)
 {
 	xml_attribute<>* consequent = rule_node->first_attribute("consequent");
 	if(consequent == NULL || consequent->value_size() <= 0) return NULL;
 	InferenceRule* created_rule = new InferenceRule(consequent->value(), rule_name);
 	
-	xml_node<>* ant_node = rule_node.first_child("antecedent");
-	for(; ant_node != NULL; ant_node = ant_node.next_sibling("antecedent"))
+	xml_node<>* ant_node = rule_node->first_node("antecedent");
+	for(; ant_node != NULL; ant_node = ant_node->next_sibling("antecedent"))
 	{
 		//It is OK for an inference rule to have no antecedents.
 		xml_attribute<>* ant_form = ant_node->first_attribute("form");
@@ -131,12 +155,12 @@ Justification* BuiltInRules::readInferenceRule(xml_node rule_node, char* rule_na
 	return (Justification*)created_rule;
 }
 
-Justification* BuiltInRules::readAggregateRule(xml_node rule_node, char* rule_name)
+Justification* BuiltInRules::readAggregateRule(xml_node<>* rule_node, char* rule_name)
 {
 	bool has_added_subrules = false;
 	AggregateJustification* created_rule = new AggregateJustification(rule_name);
 	
-	for(xml_node<>* subrule_node = rule_node->first_child(0); subrule_node != NULL; subrule_node = subrule_node->next_sibling(0))
+	for(xml_node<>* subrule_node = rule_node->first_node(0); subrule_node != NULL; subrule_node = subrule_node->next_sibling(0))
 	{
 		Justification* subrule = readRuleNode(subrule_node);
 		

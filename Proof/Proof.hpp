@@ -60,7 +60,7 @@ class Proof
   
   private:
   void printProofLine(int index);
-  void createJustifications();
+  //void createJustifications();
 };
 
 #endif
