@@ -45,6 +45,7 @@ void BuiltInRules::readRulesFromFile()
 		input_buffer[read_size] = '\0';
 		input_string << input_buffer;
 	}
+	close(fd);
 	
 	//rapidxml modifies the c string it parses; copy data to a non-const c-string, then parse.
 	delete [] input_buffer;
@@ -60,7 +61,6 @@ void BuiltInRules::readRulesFromFile()
 		cerr << "Error: rules file could not be parsed, exception id " << e << endl;
 		exit(2);
 	}
-	delete [] input_buffer;
 	
 	//Create rules from nodes
 	for(xml_node<>* rule_node = input_structure.first_node(0); rule_node != NULL; rule_node = rule_node->next_sibling(0))
@@ -75,10 +75,14 @@ void BuiltInRules::readRulesFromFile()
 			delete new_rule;
 		}
 		else
-			rules[string(rule_name->value())] = new_rule;
+		{
+			rules[string(rule_name->value())]=new_rule;
+		}
 	}
 
 	rules_need_reading = false;
+	input_structure.clear();
+	delete [] input_buffer;
 }
 
 //Translates one XML node into a rule in the map.
@@ -93,7 +97,7 @@ Justification* BuiltInRules::readRuleNode(xml_node<>* rule_node)
 	}
 	else
 	{
-		rule_name = new char[rule_node->value_size()+1];
+		rule_name = new char[attr->value_size()+1];
 		strcpy(rule_name, attr->value());
 	}
 	
