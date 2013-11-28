@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+
+<!-- EQUIVALENCE RULES -->
+
+<equivalence rulename="Association">
+	<pair form1="a&(b&c)" form2="(a&b)&c" />
+	<pair form1="a|(b|c)" form2="(a|b)|c" />
+</equivalence>
+
+<equivalence rulename="Commutation">
+	<pair form1="a&b" form2="b&a" />
+	<pair form1="a|b" form2="b|a" />
+</equivalence>
+
+<equivalence rulename="DeMorgan">
+	<pair form1="!(a&b)" form2="!a|!b" />
+</equivalence>
+
+<equivalence rulename="Distribution">
+	<pair form1="a&(b|c)" form2="(a&b)|(a&c)" />
+	<pair form1="a|(b&c)" form2="(a|b)&(a|c)" />
+</equivalence>
+
+<equivalence rulename="Idempotence">
+	<pair form1="a&a" form2="a" />
+	<pair form1="a|a" form2="a" />
+</equivalence>
+
+<equivalence rulename="Absorption">
+	<pair form1="a&(a|b)" form2="a" />
+	<pair form1="a|(a&b" form2="a" />
+</equivalence>
+
+<equivalence rulename="Reduction">
+	<pair form1="a&(!a|b)" form2="a&b" />
+	<pair form1="a|(!a&b)" form2="a|b" />
+</equivalence>
+
+<equivalence rulename="Adjacency">
+	<pair form1="(a|b)&(a|!b)" form2="a" />
+	<pair form1="(a&b)|(a&!b)" form2="a" />
+</equivalence>
+
+<!-- CONDITIONAL EQUIVALENCE RULES -->
+
+<equivalence rulename="Implication">
+	<pair form1="a>b" form2="!a|b" />
+</equivalence>
+
+<equivalence rulename="Contraposition">
+	<pair form1="a>b" form2="!b>!a" />
+</equivalence>
+
+<equivalence rulename="Exportation">
+	<pair form1="a>(b>c)" form2="(a&b)>c" />
+</equivalence>
+
+<equivalence rulename="Equivalence">
+	<pair form1="a=b" form2="(a>b)&(b>a)" />
+	<pair form1="a=b" form2="(a&b)|(!a&!b)" />
+</equivalence>
+
+<equivalence rulename="Conditional Distribution">
+	<pair form1="a>(b&c)" form2="(a>b)&(a>c)" />
+	<pair form1="a>(b|c)" form2="(a>b)|(a>c)" />
+	<pair form1="(a|b)>c" form2="(a>c)&(b>c)" />
+	<pair form1="(a&b)>c" form2="(a>c)|(b>c)" />
+</equivalence>
+
+<equivalence rulename="Conditional Reduction">
+	<pair form1="(a>b)&a" form2="a&b" />
+	<pair form1="(a>b)&!b" form2="!a&!b" />
+</equivalence>
+
+<equivalence rulename="Conditional Idempotence">
+	<pair form1="!a>a" form2="a" />
+</equivalence>
+
+<!-- INFERENCE RULES -->
+
+<!-- and -->
+<inference rulename="Conjunction" consequent="a&b">
+	<antecedent form="a" />
+	<antecedent form="b" />
+</inference>
+
+<aggregate rulename="Simplification">
+	<inference consequent="a">
+		<antecedent form="a&b" />
+	</inference>
+	<inference consequent="b">
+		<antecedent form="a&b" />
+	</inference>
+</aggregate>
+
+<!-- or -->
+<aggregate rulename="Addition">
+	<inference consequent="a|b">
+		<antecedent form="a" />
+	</inference>
+	<inference consequent="a|b">
+		<antecedent form="b" />
+	</inference>
+</aggregate>
+
+<inference rulename="Proof by Cases" consequent="c">
+	<antecedent form="a|b" />
+	<antecedent subproof="a" form="c" />
+	<antecedent subproof="b" form="c" />
+</inference>
+
+<!-- not -->
+<inference rulename="Indirect Proof" consequent="a">
+	<antecedent subproof="!a" form="b&!b" />
+</inference>
+
+<!-- not elimination is rendered moot by automatic removal of double negations -->
+
+<!-- if -->
+<inference rulename="Conditional Proof" consequent="a>b">
+	<antecedent subproof="a" form="b" />
+</inference>
+
+<inference rulename="Modus Ponens" conseqent="b">
+	<antecedent form="a>b" />
+	<antecedent form="a" />
+</inference>
+
+<!-- iff -->
+
+<inference rulename="Biconditional Proof" consequent="a=b">
+	<antecedent subproof="a" form="b" />
+	<antecedent subproof="b" form="a" />
+</inference>
+
+<aggregate rulename="Biconditional Elimination">
+	<inference consequent="a">
+		<antecedent form="a=b" />
+		<antecedent form="b" />
+	</inference>
+	<inference consequent="b">
+		<antecedent form="a=b" />
+		<antecedent form="a" />
+	</inference>
+</aggregate>
+
+<!-- Other Inference Rules -->
+
+<inference rulename="Modus Tollens" consequent="!a">
+	<antecedent form="a>b" />
+	<antecedent form="!b" />
+</inference>
+
+<inference rulename="Hypothetical Syllogism" consequent="a>c">
+	<antecedent form="a>b" />
+	<antecedent form="b>c" />
+</inference>
+
+<inference rulename="Reiteration" consequent="a">
+	<antecedent form="a" />
+</inference>
+
+<inference rulename="Excluded Middle" consequent="a|!a" />
