@@ -10,6 +10,7 @@ using std::string;
 using std::ifstream;
 using std::map;
 using std::pair;
+using std::vector;
 
 //Sets the proof object to store data in.
 void ProofReader::setTarget(Proof* new_target)
@@ -27,13 +28,13 @@ bool ProofReader::readFile(const char* filename)
   
   if(target == NULL)
   {
-    cerr << "Error: no proof to read to\n";
+    cerr << "Error: no proof to read file " << filename << "into \n";
     return false;
   }
   reader.open(filename);
   if(!reader.is_open())
   {
-    cerr << "Error: file could not be opened\n";
+    cerr << "Error: file " << filename << " could not be opened\n";
     return false;
   }
   
@@ -45,7 +46,7 @@ bool ProofReader::readFile(const char* filename)
     
     if(line == NULL)
     {
-      cerr << "Error: problem reading file\n";
+      cerr << "Error: problem reading file " << filename << "\n";
       return false;
     }
     if(strcmp(line, "") == 0) break;
@@ -54,7 +55,7 @@ bool ProofReader::readFile(const char* filename)
     {
       if(derivation_started)
       {
-        cerr << "Error: premise after start of derivation\n";
+        cerr << "Error: premise after start of derivation in file " << filename << "\n";
         return false;
       }
       pre(line+3);
@@ -62,7 +63,11 @@ bool ProofReader::readFile(const char* filename)
     else if(strncmp(line, PROOFLINE_COMMAND, 4) == 0)
     {
       derivation_started = true;
-      lin(line+3);
+      if(!lin(line+3))
+      {
+         malformedLine(filename, line);
+         return false;
+      }
     }
     else if(strncmp(line, SUBPROOF_COMMAND, 4) == 0)
     {
@@ -78,9 +83,25 @@ bool ProofReader::readFile(const char* filename)
     {
       gol(line+3);
     }
+	else if(strncmp(line, EQUIVALENCE_LEMMA_COMMAND, 4) == 0)
+	{
+    if(!equ(line+3))
+    {
+       malformedLine(filename, line);
+       return false;
+    }
+	}
+	else if(strncmp(line, INFERENCE_LEMMA_COMMAND, 4) == 0)
+	{
+    if(!inf(line+3))
+    {
+       malformedLine(filename, line);
+       return false;
+    }
+	}
     else
     {
-      cerr << "Error: unrecognized command in line: " << line << "\n";
+      cerr << "Error: unrecognized command in line: " << line << " from file " << filename << "\n";
       return false;
     }
     delete [] temp;
@@ -131,8 +152,7 @@ bool ProofReader::lin(char* input)
   if(new_line_needed)
   {
     target->addLine();
-    line_number_translation[line_number_translation.size()+1] =
-      line_number_translation.size()-line_number_offset;
+    extendLineNumberTranslation();
   }
   
   char* temp = strtok(input, ":");
@@ -160,8 +180,7 @@ bool ProofReader::lin(char* input)
 bool ProofReader::sub(char* input)
 {
   while(*input == ' ' || *input == '\t') input++;
-  line_number_translation[line_number_translation.size()+1] =
-    line_number_translation.size()-line_number_offset;
+  extendLineNumberTranslation();
   
   target->addSubproofLine();
   target->setStatement(input);
@@ -175,8 +194,7 @@ bool ProofReader::end(char* input)
   target->endSubproof();
   new_line_needed = false;
   line_number_offset++;
-  line_number_translation[line_number_translation.size()+1] =
-    line_number_translation.size()-line_number_offset;
+  extendLineNumberTranslation();
   return true;
 }
 
@@ -184,9 +202,81 @@ bool ProofReader::gol(char* input)
 {
   while(*input == ' ' || *input == '\t') input++;
   line_number_offset++;
-  line_number_translation[line_number_translation.size()+1] =
-    line_number_translation.size()-line_number_offset;
+  extendLineNumberTranslation();
   target->setGoal(input);
   return true;
+}
+
+//TODO: add some sorta loop prevention in lemma commands
+
+bool ProofReader::equ(char* input)
+{
+  while(*input == ' ' || *input == '\t') input++;
+  line_number_offset++;
+  extendLineNumberTranslation();
+  //Insert stuff here
+  return true;
+}
+
+bool ProofReader::inf(char* input)
+{
+  while(*input == ' ' || *input == '\t') input++;
+  line_number_offset++;
+  extendLineNumberTranslation();
+  
+  char* inference_name = strtok(input, ":");
+  if(inference_name == NULL || strcmp(inference_name, "") == 0) return false;
+  
+  char* lemma_file_name = strtok(NULL, "\r\n");
+  if(lemma_file_name == NULL || strcmp(lemma_file_name, "") == 0) return false;
+  
+  Proof lemma_proof;
+  ProofReader lemma_proof_reader;
+  lemma_proof_reader.setTarget(&lemma_proof);
+  if(!lemma_proof_reader.readFile(lemma_file_name)) return false;
+  
+  cout << "Proof for lemma \"" << inference_name << "\" follows:\n";
+  lemma_proof.printProof();
+  if(!lemma_proof.verifyProof())
+  {
+    cout << "Inference lemma \"" << inference_name << "\" was not successfully proven.\n";
+    cout << "Lines that rely on this inference will appear as unjustified.\n-------------------------\n";
+    return true;
+  }
+  
+  char* lemma_goal = lemma_proof.createGoalString();
+  if(strcmp(lemma_goal, "") == 0)
+  {
+    delete [] lemma_goal;
+    cout << "Inference lemma \"" << inference_name << "\" has no consequent and consequently could not be created.\n";
+    cout << "Lines that rely on this inference will appear as unjustified.\n-------------------------\n";
+    return true;
+  }
+  vector<char*> lemma_premises;
+  lemma_proof.createPremiseStrings(lemma_premises);
+  
+  bool return_value = true;
+  if(!target->addInferenceRule(lemma_premises, lemma_goal, inference_name))
+  {
+    cerr << "Error: inference rule named \"" << inference_name << "\" already exists\n";
+    return_value = false;
+  }
+  cout << "-------------------------\n";
+  delete [] lemma_goal;
+  for(unsigned int i = 0; i < lemma_premises.size(); i++)
+    delete [] lemma_premises[i];
+  
+  return return_value;
+}
+
+void ProofReader::malformedLine(const char* filename, char* input)
+{
+	cerr << "Error in " << filename << ": line " << input << " is malformed\n";
+}
+
+void ProofReader::extendLineNumberTranslation()
+{
+  line_number_translation[line_number_translation.size()+1] =
+    line_number_translation.size()-line_number_offset;
 }
 

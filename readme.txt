@@ -215,3 +215,5 @@ lin a:Indirect Proof:4
 
 =========================================
 Created by Michael Usher, spring 2013
+
+rapidxml is distributed under the Boost license or the MIT license

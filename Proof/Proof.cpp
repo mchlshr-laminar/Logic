@@ -22,8 +22,6 @@ Proof::~Proof()
 {
   for(unsigned int i = 0; i < proof_data.size(); i++)
     delete proof_data[i];
-  for(justification_map::iterator itr = rules.begin(); itr != rules.end(); itr++)
-    delete itr->second;
   if(goal != NULL) delete goal;
 }
 
@@ -176,6 +174,24 @@ void Proof::removeLine()
   current_position--;
 }
 
+bool Proof::addEquivalenceRule(const char* form1, const char* form2, const char* name)
+{
+  //To Implement
+  return false;
+}
+
+bool Proof::addInferenceRule(const std::vector<char*>& antecedents, const char* goal, const char* name)
+{
+  if(rules.find(name) != rules.end()) return false;
+  
+  InferenceRule* added_inference = new InferenceRule(goal, name);
+  for(unsigned int i = 0; i < antecedents.size(); i++)
+    added_inference->addRequiredForm(antecedents[i]);
+  
+  rules[name] = added_inference;
+  return true;
+}
+
 //Checks and prints if the proof works.
 bool Proof::verifyProof()
 {
@@ -212,7 +228,11 @@ bool Proof::verifyProof()
   if(!failed) cout << "All lines check out\n";
   if(goal != NULL)
   {
-    if(goal_index == -1) cout << "Goal not found\n";
+    if(goal_index == -1)
+    {
+      cout << "Goal not found\n";
+      failed = true;
+    }
     else cout << "Goal found at line " << (goal_index+1) << "\n";
   }
   return !failed;
@@ -262,6 +282,7 @@ void Proof::printProofLine(int index)
     
   char* display_string = proof_data[index]->createDisplayString();
   cout << " " << display_string << "\n";
+  delete [] display_string; //new; I hope this doesn't break anything.
   
   if(proof_data[index]->isAssumption() && index > last_premise)
   {
@@ -270,6 +291,24 @@ void Proof::printProofLine(int index)
       cout << ']';
     cout << "---\n";
   }
+}
+
+char* Proof::createGoalString()
+{
+  if(goal == NULL)
+  {
+    char* empty_goal = new char[1];
+    *empty_goal = '\0';
+    return empty_goal;
+  }
+  
+  return goal->createDisplayString();
+}
+
+void Proof::createPremiseStrings(std::vector<char*>& premise_strings)
+{
+  for(int i = 0; i <= last_premise; i++)
+    premise_strings.push_back(proof_data[i]->getStatementData()->createDisplayString());
 }
 
 /*void Proof::createJustifications()

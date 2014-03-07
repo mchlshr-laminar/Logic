@@ -55,8 +55,14 @@ class Proof
   
   void removeLine();
   
+  //Right now lemmas will not be added to the ruleset for subsequent lemmas; this should change.
+  bool addEquivalenceRule(const char* form1, const char* form2, const char* name);
+  bool addInferenceRule(const std::vector<char*>& antecedents, const char* goal, const char* name);
+  
   bool verifyProof();
   void printProof();
+  char* createGoalString();
+  void createPremiseStrings(std::vector<char*>& premise_strings);
   
   private:
   void printProofLine(int index);

@@ -9,6 +9,7 @@
 #include "../Justifications/Justification.hpp"
 #include <map>
 
+//The fact that clients can deallocate the justifications in the map is probably not ideal.
 class BuiltInRules
 {
 	private:

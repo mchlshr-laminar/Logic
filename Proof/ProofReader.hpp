@@ -14,6 +14,8 @@
 #define SUBPROOF_COMMAND "sub "
 #define SUBPROOF_END_COMMAND "end"
 #define GOAL_DEF_COMMAND "gol "
+#define EQUIVALENCE_LEMMA_COMMAND "equ "
+#define INFERENCE_LEMMA_COMMAND "inf "
 
 //Reads a proof from an input file.
 class ProofReader
@@ -42,6 +44,12 @@ class ProofReader
   bool sub(char* input);
   bool end(char* input);
   bool gol(char* input);
+  
+  bool equ(char* input);
+  bool inf(char* input);
+  
+  void malformedLine(const char* filename, char* input);
+  void extendLineNumberTranslation();
 };
 
 #endif
