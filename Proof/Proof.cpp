@@ -1,5 +1,5 @@
 #include "Proof.hpp"
-#include "BuiltInRules.hpp"
+#include "ProofRules.hpp"
 #include "../Statements/StatementTree.hpp"
 #include <iostream>
 #include <stack>
@@ -15,7 +15,7 @@ using std::string;
 Proof::Proof() : current_position(-1), last_premise(-1), goal(NULL)
 {
   //createJustifications();
-  rules = BuiltInRules::getRuleMap();
+  //rules = ProofRules::getRuleMap(); //JOIN YOUR PREDECESSOR IN OBLIVION
 }
 
 Proof::~Proof()
@@ -76,9 +76,9 @@ void Proof::setJustification(const char* justification_name)
 {
   if(current_position <= last_premise) return;
   
-  justification_map::iterator pos = rules.find(string(justification_name));
-  if(pos != rules.end())
-    proof_data[current_position]->setJustification(pos->second);
+  Justification* justification_rule = ProofRules::findRule(justification_name);
+  if(justification_rule != NULL)
+    proof_data[current_position]->setJustification(justification_rule);
 }
 
 //Toggles whether or not the specified line is listed as an antecedent of the
@@ -176,19 +176,24 @@ void Proof::removeLine()
 
 bool Proof::addEquivalenceRule(const char* form1, const char* form2, const char* name)
 {
-  //To Implement
-  return false;
+  if(ProofRules::findRule(name) != NULL) return false;
+  
+  EquivalenceRule* added_equivalence = new EquivalenceRule(name);
+  added_equivalence->addEquivalentPair(form1, form2);
+  
+  ProofRules::addRule(added_equivalence);
+  return true;
 }
 
 bool Proof::addInferenceRule(const std::vector<char*>& antecedents, const char* goal, const char* name)
 {
-  if(rules.find(name) != rules.end()) return false;
+  if(ProofRules::findRule(name) != NULL) return false;
   
   InferenceRule* added_inference = new InferenceRule(goal, name);
   for(unsigned int i = 0; i < antecedents.size(); i++)
     added_inference->addRequiredForm(antecedents[i]);
   
-  rules[name] = added_inference;
+  ProofRules::addRule(added_inference);
   return true;
 }
 
@@ -263,7 +268,7 @@ void Proof::printProof()
 
 void Proof::printProofLine(int index)
 {
-  int depth = 0; //Is inefficient, change later
+  int depth = 0; //Is inefficient, change later (pass depth as parameter?)
   ProofStatement* traveller = proof_data[index]->getParent();
   for(; traveller != NULL; depth++, traveller = traveller->getParent());
   
@@ -282,7 +287,7 @@ void Proof::printProofLine(int index)
     
   char* display_string = proof_data[index]->createDisplayString();
   cout << " " << display_string << "\n";
-  delete [] display_string; //new; I hope this doesn't break anything.
+  delete [] display_string;
   
   if(proof_data[index]->isAssumption() && index > last_premise)
   {
@@ -310,168 +315,3 @@ void Proof::createPremiseStrings(std::vector<char*>& premise_strings)
   for(int i = 0; i <= last_premise; i++)
     premise_strings.push_back(proof_data[i]->getStatementData()->createDisplayString());
 }
-
-/*void Proof::createJustifications()
-{
-  EquivalenceRule* rule;
-  //EQUIVALENCE RULES
-  rule = new EquivalenceRule("Association");
-  rule->addEquivalentPair("a&(b&c)", "(a&b)&c");
-  rule->addEquivalentPair("a|(b|c)", "(a|b)|c");
-  rules[string("Association")] = rule;
-  
-  rule = new EquivalenceRule("Commutation");
-  rule->addEquivalentPair("a&b", "b&a");
-  rule->addEquivalentPair("a|b", "b|a");
-  rules[string("Commutation")] = rule;
-  
-  rule = new EquivalenceRule("DeMorgan");
-  rule->addEquivalentPair("!(a&b)", "!a|!b");
-  //Consolidation of negation removes need for second version.
-  rules[string("DeMorgan")] = rule;
-  
-  rule = new EquivalenceRule("Distribution");
-  rule->addEquivalentPair("a&(b|c)", "(a&b)|(a&c)");
-  rule->addEquivalentPair("a|(b&c)", "(a|b)&(a|c)");
-  rules[string("Distribution")] = rule;
-  
-  rule = new EquivalenceRule("Idempotence");
-  rule->addEquivalentPair("a&a", "a");
-  rule->addEquivalentPair("a|a", "a");
-  rules[string("Idempotence")] = rule;
-  
-  rule = new EquivalenceRule("Absorption");
-  rule->addEquivalentPair("a&(a|b)", "a");
-  rule->addEquivalentPair("a|(a&b)", "a");
-  rules[string("Absorption")] = rule;
-  
-  rule = new EquivalenceRule("Reduction");
-  rule->addEquivalentPair("a&(!a|b)", "a&b");
-  rule->addEquivalentPair("a|(!a&b)", "a|b");
-  rules[string("Reduction")] = rule;
-  
-  rule = new EquivalenceRule("Adjacency");
-  rule->addEquivalentPair("(a|b)&(a|!b)", "a");
-  rule->addEquivalentPair("(a&b)|(a&!b)", "a");
-  rules[string("Adjacency")] = rule;
-  
-  //CONDITIONAL EQUIVALENCE RULES
-  rule = new EquivalenceRule("Implication");
-  rule->addEquivalentPair("a>b", "!a|b");
-  //Second version is first + DeMorgan.
-  rules[string("Implication")] = rule;
-  
-  rule = new EquivalenceRule("Contraposition");
-  rule->addEquivalentPair("a>b", "!b>!a");
-  rules[string("Contraposition")] = rule;
-  
-  rule = new EquivalenceRule("Exportation");
-  rule->addEquivalentPair("a>(b>c)", "(a&b)>c");
-  rules[string("Exportation")] = rule;
-  
-  rule = new EquivalenceRule("Equivalence");
-  rule->addEquivalentPair("a=b", "(a>b)&(b>a)");
-  rule->addEquivalentPair("a=b", "(a&b)|(!a&!b)");
-  rules[string("Equivalence")] = rule;
-  
-  rule = new EquivalenceRule("Conditional Distribution");
-  rule->addEquivalentPair("a>(b&c)", "(a>b)&(a>c)");
-  rule->addEquivalentPair("a>(b|c)", "(a>b)|(a>c)");
-  rule->addEquivalentPair("(a|b)>c", "(a>c)&(b>c)");
-  rule->addEquivalentPair("(a&b)>c", "(a>c)|(b>c)");
-  rules[string("Conditional Distribution")] = rule;
-  
-  rule = new EquivalenceRule("Conditional Reduction");
-  rule->addEquivalentPair("(a>b)&a", "a&b");
-  rule->addEquivalentPair("(a>b)&!b", "!a&!b");
-  rules[string("Conditional Reduction")] = rule;
-  //Conditional Idempotence by implication & idempotence
-  
-  //INFERENCE RULES
-  InferenceRule* temp;
-  AggregateJustification* ag;
-  //and
-  temp = new InferenceRule("a&b", "Conjunction");
-  temp->addRequiredForm("a");
-  temp->addRequiredForm("b");
-  rules[string("Conjunction")] = temp;
-  
-  ag = new AggregateJustification("Simplification");
-  temp = new InferenceRule("a", "simp1");
-  temp->addRequiredForm("a&b");
-  ag->addRule(temp);
-  temp = new InferenceRule("b", "simp2");
-  temp->addRequiredForm("a&b");
-  ag->addRule(temp);
-  rules[string("Simplification")] = ag;
-  
-  //or
-  ag = new AggregateJustification("Addition");
-  temp = new InferenceRule("a|b", "add1");
-  temp->addRequiredForm("a");
-  ag->addRule(temp);
-  temp = new InferenceRule("a|b", "add2");
-  temp->addRequiredForm("b");
-  ag->addRule(temp);
-  rules[string("Addition")] = ag;
-  
-  temp = new InferenceRule("c", "Proof by Cases");
-  temp->addRequiredForm("a|b");
-  temp->addRequiredForm("c", "a");
-  temp->addRequiredForm("c", "b");
-  rules[string("Proof by Cases")] = temp;
-  
-  //not
-  temp = new InferenceRule("a", "Indirect Proof");
-  temp->addRequiredForm("b&!b", "!a");
-  rules[string("Indirect Proof")] = temp;
-  
-  //Not elimination is moot
-  
-  //if
-  temp = new InferenceRule("a>b", "Conditional Proof");
-  temp->addRequiredForm("b", "a");
-  rules[string("Conditional Proof")] = temp;
-  
-  temp = new InferenceRule("b", "Modus Ponens");
-  temp->addRequiredForm("a>b");
-  temp->addRequiredForm("a");
-  rules[string("Modus Ponens")] = temp;
-  
-  //iff
-  temp = new InferenceRule("a=b", "Biconditional Proof");
-  temp->addRequiredForm("a", "b");
-  temp->addRequiredForm("b", "a");
-  rules[string("Biconditional Proof")] = temp;
-  
-  ag = new AggregateJustification("Biconditional Elimination");
-  temp = new InferenceRule("a", "be1");
-  temp->addRequiredForm("a=b");
-  temp->addRequiredForm("b");
-  ag->addRule(temp);
-  temp = new InferenceRule("b", "be2");
-  temp->addRequiredForm("a=b");
-  temp->addRequiredForm("a");
-  ag->addRule(temp);
-  rules[string("Biconditional Elimination")] = ag;
-  
-  //other
-  temp = new InferenceRule("!a", "Modus Tollens");
-  temp->addRequiredForm("a>b");
-  temp->addRequiredForm("!b");
-  rules[string("Modus Tollens")] = temp;
-  //Disjunctive syllogism using implication
-  
-  temp = new InferenceRule("a>c", "Hypothetical Syllogism");
-  temp->addRequiredForm("a>b");
-  temp->addRequiredForm("b>c");
-  rules[string("Hypothetical Syllogism")] = temp;
-  
-  temp = new InferenceRule("a", "Reiteration");
-  temp->addRequiredForm("a");
-  rules[string("Reiteration")] = temp;
-  
-  temp = new InferenceRule("a|!a", "Excluded Middle");
-  rules[string("Excluded Middle")] = temp;
-}*/
-

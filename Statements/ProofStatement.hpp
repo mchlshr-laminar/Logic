@@ -15,8 +15,6 @@ typedef std::set<ProofStatement*> statement_set;
 class ProofStatement
 {
   public:
-  /*const static int NO_FAILURE = 0, INVALID_STATEMENT = 1, NO_JUSTIFICATION = 2,
-    JUSTIFICATION_FAILURE = 3;*/
   enum failure_type_t { NO_FAILURE, INVALID_STATEMENT, NO_JUSTIFICATION,
     JUSTIFICATION_FAILURE};
   protected:

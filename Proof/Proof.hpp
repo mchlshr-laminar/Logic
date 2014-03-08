@@ -13,17 +13,17 @@
 #include <vector>
 #include <string>
 
-class Proof;
+//class Proof;
 
-class StringMapper
+/*class StringMapper
 {
   public:
   bool operator()(std::string str1, std::string str2)
   { return str1.compare(str2) < 0; }
-};
+};*/
 
 typedef std::vector<ProofStatement*> proof_list;
-typedef std::map<std::string, Justification*, StringMapper> justification_map;
+//typedef std::map<std::string, Justification*, StringMapper> justification_map;
 
 //Stores a proof
 class Proof
@@ -32,7 +32,7 @@ class Proof
   int current_position;
   int last_premise;
   proof_list proof_data;
-  justification_map rules;
+  //justification_map rules;
   Assumption premise_just;
   StatementTree* goal;
   

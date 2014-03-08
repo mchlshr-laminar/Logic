@@ -214,7 +214,9 @@ bool ProofReader::equ(char* input)
   while(*input == ' ' || *input == '\t') input++;
   line_number_offset++;
   extendLineNumberTranslation();
-  //Insert stuff here
+  
+  //insert stuff here
+  
   return true;
 }
 

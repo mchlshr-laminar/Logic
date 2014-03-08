@@ -20,7 +20,7 @@ int main(int nargs, char** args)
   r.setTarget(&p);
   if(!r.readFile(args[1]))
   {
-    cerr << "Errors reading file\n";
+    cerr << "Program terminated: errors encountered while reading file(s)\n";
     return 0;
   }
   
