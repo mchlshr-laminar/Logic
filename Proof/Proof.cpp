@@ -14,8 +14,7 @@ using std::string;
 
 Proof::Proof() : current_position(-1), last_premise(-1), goal(NULL)
 {
-  //createJustifications();
-  //rules = ProofRules::getRuleMap(); //JOIN YOUR PREDECESSOR IN OBLIVION
+  //Bupkis.
 }
 
 Proof::~Proof()
@@ -36,7 +35,7 @@ void Proof::setPosition(int new_position)
     current_position = new_position;
 }
 
-//Sets the sentence of the focused statement by the given
+//Sets the sentence of the focused statement to the given
 //string.
 void Proof::setStatement(const char* statement_string)
 {
@@ -174,6 +173,8 @@ void Proof::removeLine()
   current_position--;
 }
 
+//The following two functions should be moved out of this class; they're left over from when the 
+//justification_map was a member of Proof.
 bool Proof::addEquivalenceRule(const char* form1, const char* form2, const char* name)
 {
   if(ProofRules::findRule(name) != NULL) return false;
@@ -197,7 +198,7 @@ bool Proof::addInferenceRule(const std::vector<char*>& antecedents, const char* 
   return true;
 }
 
-//Checks and prints if the proof works.
+//Checks and prints if the proof works. Note again that a proof that ends in a subproof will fail.
 bool Proof::verifyProof()
 {
   bool failed = false;

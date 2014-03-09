@@ -211,6 +211,7 @@ bool ProofReader::gol(char* input)
 //TODO: add some sorta loop prevention in lemma commands
 //pass depth limit to ProofReader & decrement?
 
+//Make an equivalence lemma
 bool ProofReader::equ(char* input)
 {
   while(*input == ' ' || *input == '\t') input++;
@@ -220,11 +221,13 @@ bool ProofReader::equ(char* input)
   char* equivalence_name = strtok(input, ":");
   if(equivalence_name == NULL || strcmp(equivalence_name, "") == 0) return false;
   
+  //getting filenames
   char* direction_1_filename = strtok(NULL, ":");
   char* direction_2_filename = strtok(NULL, "\r\n");
   if(direction_1_filename == NULL || strcmp(direction_1_filename, "") == 0) return false;
   if(direction_2_filename == NULL || strcmp(direction_2_filename, "") == 0) return false;
   
+  //reading files
   Proof direction_1, direction_2;
   ProofReader direction_1_reader, direction_2_reader;
   direction_1_reader.setTarget(&direction_1);
@@ -232,6 +235,7 @@ bool ProofReader::equ(char* input)
   if(!direction_1_reader.readFile(direction_1_filename) || !direction_2_reader.readFile(direction_2_filename))
     return false;
   
+  //Print and verify proofs
   cout << "Proofs for lemma \"" << equivalence_name << "\" follow:\nFirst Proof:\n";
   direction_1.printProof();
   bool dir_1_verified = direction_1.verifyProof();
@@ -246,12 +250,14 @@ bool ProofReader::equ(char* input)
     return true;
   }
   
+  //Get the premises
   char* form_1 = direction_1.createGoalString();
   char* form_2 = direction_2.createGoalString();
   vector<char*> premise_1, premise_2;
   direction_1.createPremiseStrings(premise_1);
   direction_2.createPremiseStrings(premise_2);
   
+  //Check that the proofs are of the proper form & match each other.
   bool return_value = true;
   if(matchEquivalenceForms(form_1, form_2, premise_1, premise_2))
   {
@@ -274,23 +280,27 @@ bool ProofReader::equ(char* input)
   return return_value;
 }
 
+//Create an inference lemma
 bool ProofReader::inf(char* input)
 {
   while(*input == ' ' || *input == '\t') input++;
   line_number_offset++;
   extendLineNumberTranslation();
   
+  //Names of things
   char* inference_name = strtok(input, ":");
   if(inference_name == NULL || strcmp(inference_name, "") == 0) return false;
   
   char* lemma_file_name = strtok(NULL, "\r\n");
   if(lemma_file_name == NULL || strcmp(lemma_file_name, "") == 0) return false;
   
+  //Read file
   Proof lemma_proof;
   ProofReader lemma_proof_reader;
   lemma_proof_reader.setTarget(&lemma_proof);
   if(!lemma_proof_reader.readFile(lemma_file_name)) return false;
   
+  //Print & verify proof
   cout << "Proof for lemma \"" << inference_name << "\" follows:\n";
   lemma_proof.printProof();
   if(!lemma_proof.verifyProof())
@@ -300,6 +310,7 @@ bool ProofReader::inf(char* input)
     return true;
   }
   
+  //Check existence of goal
   char* lemma_goal = lemma_proof.createGoalString();
   if(strcmp(lemma_goal, "") == 0)
   {
@@ -311,6 +322,7 @@ bool ProofReader::inf(char* input)
   vector<char*> lemma_premises;
   lemma_proof.createPremiseStrings(lemma_premises);
   
+  //Create rule
   bool return_value = true;
   if(!target->addInferenceRule(lemma_premises, lemma_goal, inference_name))
   {
@@ -330,6 +342,7 @@ void ProofReader::malformedLine(const char* filename, char* input)
 	cerr << "Error in " << filename << ": line " << input << " is malformed\n";
 }
 
+//For translation between file line number & proof line number.
 void ProofReader::extendLineNumberTranslation()
 {
   line_number_translation[line_number_translation.size()+1] =

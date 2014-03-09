@@ -6,7 +6,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-//Runs the program
+//Runs the program, what did you expect?
 int main(int nargs, char** args)
 {
   if(nargs != 2)

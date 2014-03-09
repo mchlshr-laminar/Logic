@@ -13,26 +13,16 @@
 #include <vector>
 #include <string>
 
-//class Proof;
-
-/*class StringMapper
-{
-  public:
-  bool operator()(std::string str1, std::string str2)
-  { return str1.compare(str2) < 0; }
-};*/
-
 typedef std::vector<ProofStatement*> proof_list;
-//typedef std::map<std::string, Justification*, StringMapper> justification_map;
 
-//Stores a proof
+//Stores a proof. Proof is edited in a state-machine-like way; one line of the proof is currently focused
+//and command execution is relative to that line (i.e. addLine adds a line directly after the focus etc.).
 class Proof
 {
   private:
   int current_position;
   int last_premise;
   proof_list proof_data;
-  //justification_map rules;
   Assumption premise_just;
   StatementTree* goal;
   
@@ -55,6 +45,7 @@ class Proof
   
   void removeLine();
   
+  //MOVE/REMOVE THESE
   bool addEquivalenceRule(const char* form1, const char* form2, const char* name);
   bool addInferenceRule(const std::vector<char*>& antecedents, const char* goal, const char* name);
   
@@ -67,7 +58,6 @@ class Proof
   
   private:
   void printProofLine(int index);
-  //void createJustifications();
 };
 
 #endif

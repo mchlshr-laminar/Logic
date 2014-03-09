@@ -127,11 +127,6 @@ bool EquivalenceRule::match(StatementTree* target, StatementTree* form, bind_map
 //matches the target. (note a == !b <==> !a == b).
 void EquivalenceRule::matchFormOneNegation(StatementTree* target, equiv_pair& source)
 {
-  /*if(target->isAffirmed() != form1.isAffirmed())
-  {
-    form1.negate();
-    form2.negate();
-  }*/
   if(target->isAffirmed() != source.first->isAffirmed())
   {
     source.first->negate();

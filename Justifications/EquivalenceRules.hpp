@@ -16,7 +16,6 @@ typedef std::pair<StatementTree*, StatementTree*> equiv_pair;
 class EquivalenceRule : public Justification
 {
   private:
-  //StatementTree form1, form2;
   std::list<equiv_pair> equivalent_pairs;
   
   bool areEquivalent(StatementTree* tree1, StatementTree* tree2);

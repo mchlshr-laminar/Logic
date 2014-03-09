@@ -303,13 +303,6 @@ int StatementTree::findOperator(char* input) //Maybe look from right to left.
   for(int type = OP_START; type <= OP_END; type++)
   {
     int paren_depth = 0;
-    /*for(int i = 0; i < len; i++)
-    {
-      if(input[i] == '(') paren_depth++;
-      else if(input[i] == ')') paren_depth--;
-      else if(paren_depth == 0 && operatorType(input[i]) == type) return i;
-    }*/
-    //Reverse iteration for left-to-right order of operations.
     for(int i = len-1; i >= 0; i--)
     {
       if(input[i] == ')') paren_depth++;

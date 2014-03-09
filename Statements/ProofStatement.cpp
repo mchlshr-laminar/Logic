@@ -32,8 +32,6 @@ StatementTree* ProofStatement::getAssumption()
 //rule. sets the fail_type flag if it is not justified.
 bool ProofStatement::isJustified()
 {
-  //if(!data->isValid() || reason == NULL /*|| !antecedentsAllowable()*/) return false;
-  //return reason->isJustified(*data, antecedents);
   if(!data->isValid())
   {
     fail_type = INVALID_STATEMENT;

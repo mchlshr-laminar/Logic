@@ -4,7 +4,6 @@
 #define DEFAULT_RULES_FILENAME "rules.xml"
 #define RULE_CHUNK_SIZE 20
 
-//#include "Proof.hpp"
 #include "../rapidxml/rapidxml.hpp"
 #include "../Justifications/Justification.hpp"
 #include <map>
@@ -20,6 +19,10 @@ class StringMapper
 typedef std::map<std::string, Justification*, StringMapper> justification_map;
 
 //In the future it might be good to make the use of justifications const
+
+//Creates, stores, and retrieves the justification rules usable in the proof. Default rules are read
+//from the file DEFAULT_RULES_FILENAME and additional rules can be added by the user
+//(using lemmas presumably).
 class ProofRules
 {
 	private:

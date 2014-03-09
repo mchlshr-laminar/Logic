@@ -18,7 +18,6 @@ class InferenceRule : public Justification
 {
   private:
   StatementTree result_form;
-  //tree_list required_forms;
   std::list<form_pair> required_forms;
   
   bool match(StatementTree* target, StatementTree* form, bind_map& binds);

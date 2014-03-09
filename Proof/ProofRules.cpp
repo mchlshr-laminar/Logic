@@ -19,7 +19,7 @@ using rapidxml::xml_attribute;
 bool ProofRules::rules_need_reading = true;
 justification_map ProofRules::rules;
 
-//Creates the rule map from the XML input file.
+//Creates the initial rule map from the XML input file.
 void ProofRules::readRulesFromFile()
 {
 	//Open and read file to a stringstream.
@@ -35,7 +35,6 @@ void ProofRules::readRulesFromFile()
 	int read_size;
 	while( (read_size = read(fd, input_buffer, RULE_CHUNK_SIZE)) )
 	{
-		//TODO: if(read_size == -1) error
 		if(read_size == -1)
 		{
 			cerr << "Error: rules file was opened but couldn't be read." << endl;
@@ -53,7 +52,7 @@ void ProofRules::readRulesFromFile()
 	xml_document<> input_structure;
 	try
 	{
-	input_structure.parse<0>(input_buffer);
+    input_structure.parse<0>(input_buffer);
 	}
 	catch(int e)
 	{
@@ -84,13 +83,15 @@ void ProofRules::readRulesFromFile()
 	delete [] input_buffer;
 }
 
-//Translates one XML node into a rule in the map.
+//Translates one XML node into a Justification object.
 Justification* ProofRules::readRuleNode(xml_node<>* rule_node)
 {
+  //Read the rule name
 	char* rule_name = NULL;
 	xml_attribute<>* attr = rule_node->first_attribute("rulename");
 	if(attr == NULL)
 	{
+    //Aggregate justification rules have unnamed sub-rules, so this isn't an error condition.
 		rule_name = new char[13];
 		strcpy(rule_name, "Unnamed Rule");
 	}
@@ -100,6 +101,7 @@ Justification* ProofRules::readRuleNode(xml_node<>* rule_node)
 		strcpy(rule_name, attr->value());
 	}
 	
+  //Read the rest of the rule.
 	Justification* retval = NULL;
 	if(strcmp(rule_node->name(), "equivalence") == 0)
 		retval = readEquivalenceRule(rule_node, rule_name);
@@ -111,11 +113,14 @@ Justification* ProofRules::readRuleNode(xml_node<>* rule_node)
 	return retval;
 }
 
+//Creates an EquivalenceRule object from an appropriate XML node, returns it as a Justification.
+//Is a helper for readRuleNode.
 Justification* ProofRules::readEquivalenceRule(xml_node<>* rule_node, char* rule_name)
 {
 	bool has_added_pairs = false;
 	EquivalenceRule* created_rule = new EquivalenceRule(rule_name);
 	
+  //Read all the equivalent pairs
 	for(xml_node<>* pair_node = rule_node->first_node("pair"); pair_node != NULL; pair_node = pair_node->next_sibling("pair"))
 	{
 		xml_attribute<>* first_form = pair_node->first_attribute("form1");
@@ -127,6 +132,7 @@ Justification* ProofRules::readEquivalenceRule(xml_node<>* rule_node, char* rule
 		has_added_pairs = true;
 	}
 	
+  //An equivalence rule must have at least on equivalent pair.
 	if(!has_added_pairs)
 	{
     cerr << "Error in rules file: equivalence " << rule_name << " is empty and cannot be created.\n";
@@ -136,9 +142,12 @@ Justification* ProofRules::readEquivalenceRule(xml_node<>* rule_node, char* rule
 	return (Justification*)created_rule;
 }
 
+//Creates an InferenceRule object from an appropriate XML node, returns it as a Justification.
+//Is a helper for readRuleNode.
 Justification* ProofRules::readInferenceRule(xml_node<>* rule_node, char* rule_name)
 {
 	xml_attribute<>* consequent = rule_node->first_attribute("consequent");
+  //An inference rule must have a consequent form, otherwise it does nothing.
 	if(consequent == NULL || consequent->value_size() <= 0)
   {
     cerr << "Error in rules file: " << rule_name << " has no consequent and cannot be created.\n";
@@ -163,11 +172,14 @@ Justification* ProofRules::readInferenceRule(xml_node<>* rule_node, char* rule_n
 	return (Justification*)created_rule;
 }
 
+//Creates an AggregateJustification object from an appropriate XML node, returns it as a Justification.
+//Is a helper for readRuleNode; readRuleNode is called recursively to read the sub-rules.
 Justification* ProofRules::readAggregateRule(xml_node<>* rule_node, char* rule_name)
 {
 	bool has_added_subrules = false;
 	AggregateJustification* created_rule = new AggregateJustification(rule_name);
 	
+  //Read each sub-rule
 	for(xml_node<>* subrule_node = rule_node->first_node(0); subrule_node != NULL; subrule_node = subrule_node->next_sibling(0))
 	{
 		Justification* subrule = readRuleNode(subrule_node);
@@ -179,6 +191,7 @@ Justification* ProofRules::readAggregateRule(xml_node<>* rule_node, char* rule_n
 		}
 	}
 	
+  //Must have at least one sub-rule (hopefully more than one though, or WTF are you doing)
 	if(!has_added_subrules)
 	{
 		delete created_rule;
@@ -187,21 +200,22 @@ Justification* ProofRules::readAggregateRule(xml_node<>* rule_node, char* rule_n
 	return (Justification*)created_rule;
 }
 
-/*const justification_map& ProofRules::getRuleMap()
-{
-	if(rules_need_reading) readRulesFromFile();
-	return rules;
-}*/
-
+//Finds and returns the justification rule with the given name. Returns NULL if no such rule is found.
+//Reads default rules from the file first if that has not yet happened.
 Justification* ProofRules::findRule(const char* rule_name)
 {
-  if(rules_need_reading) readRulesFromFile(); //It's almost like lazy evaluation, only not.
+  if(rules_need_reading) readRulesFromFile();
+  //If a user lemma is defined before any justification rules have been used (including in lemma proofs) then
+  //this could be a problem. I don't think that's possible though; investigate.
+  //Something else using addRule could be problematic though.
   
   justification_map::iterator itr = rules.find(string(rule_name));
   if(itr == rules.end()) return NULL;
   return itr->second;
 }
 
+//Adds the given rule to the map if no rule with the same name already exists. Returns whether the
+//rule was successfully added.
 bool ProofRules::addRule(Justification* added_rule)
 {
   if(added_rule == NULL) return false;
