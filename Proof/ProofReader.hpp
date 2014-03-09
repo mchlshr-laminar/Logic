@@ -50,6 +50,7 @@ class ProofReader
   
   void malformedLine(const char* filename, char* input);
   void extendLineNumberTranslation();
+  bool matchEquivalenceForms(char* form_1, char* form_2, std::vector<char*> premise_1, std::vector<char*> premise_2);
 };
 
 #endif

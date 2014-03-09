@@ -41,7 +41,7 @@ bool ProofReader::readFile(const char* filename)
   while(!reader.eof())
   {
     char* temp = readLine();
-    char* line = temp;
+    char* line = temp; //this pointer moves
     while(*line == ' ' || *line == '\t') line++;
     
     if(line == NULL)
@@ -119,12 +119,13 @@ char* ProofReader::readLine()
   char* temp = new char[50];
   do
   {
+    reader.clear();
     reader.getline(temp, 50);
     linestream << temp;
-  } while(linestream.fail() && !linestream.eof() && !linestream.bad());
+  } while(reader.fail() && !reader.eof() && !reader.bad());
   delete [] temp;
   
-  if(linestream.fail() || linestream.bad()) return NULL;
+  if(reader.fail()) return NULL;
   string tempstr = linestream.str();
   temp = new char[tempstr.size()+1];
   strcpy(temp, tempstr.c_str());
@@ -208,6 +209,7 @@ bool ProofReader::gol(char* input)
 }
 
 //TODO: add some sorta loop prevention in lemma commands
+//pass depth limit to ProofReader & decrement?
 
 bool ProofReader::equ(char* input)
 {
@@ -215,9 +217,61 @@ bool ProofReader::equ(char* input)
   line_number_offset++;
   extendLineNumberTranslation();
   
-  //insert stuff here
+  char* equivalence_name = strtok(input, ":");
+  if(equivalence_name == NULL || strcmp(equivalence_name, "") == 0) return false;
   
-  return true;
+  char* direction_1_filename = strtok(NULL, ":");
+  char* direction_2_filename = strtok(NULL, "\r\n");
+  if(direction_1_filename == NULL || strcmp(direction_1_filename, "") == 0) return false;
+  if(direction_2_filename == NULL || strcmp(direction_2_filename, "") == 0) return false;
+  
+  Proof direction_1, direction_2;
+  ProofReader direction_1_reader, direction_2_reader;
+  direction_1_reader.setTarget(&direction_1);
+  direction_2_reader.setTarget(&direction_2);
+  if(!direction_1_reader.readFile(direction_1_filename) || !direction_2_reader.readFile(direction_2_filename))
+    return false;
+  
+  cout << "Proofs for lemma \"" << equivalence_name << "\" follow:\nFirst Proof:\n";
+  direction_1.printProof();
+  bool dir_1_verified = direction_1.verifyProof();
+  cout << "Second Proof:\n";
+  direction_2.printProof();
+  bool dir_2_verified = direction_2.verifyProof();
+  if(!dir_1_verified || !dir_2_verified)
+  {
+    cout << "Equivalence lemma \"" << equivalence_name << "\" was not successfully proven.\n";
+    cout << "The " << (dir_1_verified?"second":"first") << " proof was incorrect.\n";
+    cout << "Lines that rely on this equivalence will appear as unjustified.\n-------------------------\n";
+    return true;
+  }
+  
+  char* form_1 = direction_1.createGoalString();
+  char* form_2 = direction_2.createGoalString();
+  vector<char*> premise_1, premise_2;
+  direction_1.createPremiseStrings(premise_1);
+  direction_2.createPremiseStrings(premise_2);
+  
+  bool return_value = true;
+  if(matchEquivalenceForms(form_1, form_2, premise_1, premise_2))
+  {
+    if(!target->addEquivalenceRule(form_1, form_2, equivalence_name))
+    {
+      cerr << "Error: justification rule named \"" << equivalence_name << "\" already exists\n";
+      return_value = false;
+    }
+    cout << "-------------------------\n";
+  }
+  else cout << "Lines that rely on this equivalence will appear as unjustified.\n-------------------------\n";
+  
+  delete [] form_1;
+  delete [] form_2;
+  for(unsigned int i = 0; i < premise_1.size(); i++)
+    delete [] premise_1[i];
+  for(unsigned int i = 0; i < premise_2.size(); i++)
+    delete [] premise_2[i];
+  
+  return return_value;
 }
 
 bool ProofReader::inf(char* input)
@@ -260,7 +314,7 @@ bool ProofReader::inf(char* input)
   bool return_value = true;
   if(!target->addInferenceRule(lemma_premises, lemma_goal, inference_name))
   {
-    cerr << "Error: inference rule named \"" << inference_name << "\" already exists\n";
+    cerr << "Error: justification rule named \"" << inference_name << "\" already exists\n";
     return_value = false;
   }
   cout << "-------------------------\n";
@@ -280,5 +334,20 @@ void ProofReader::extendLineNumberTranslation()
 {
   line_number_translation[line_number_translation.size()+1] =
     line_number_translation.size()-line_number_offset;
+}
+
+bool ProofReader::matchEquivalenceForms(char* form_1, char* form_2, vector<char*> premise_1, vector<char*> premise_2)
+{
+  if(strcmp(form_1, "") == 0 || strcmp(form_2, "") == 0)
+    cout << "One of the proofs had no goal set.\n";
+  else if(premise_1.size() != 1)
+    cout << "The first proof had " << ((premise_1.size()>1)?"more":"fewer") << " than 1 premise.\n";
+  else if(premise_2.size() != 1)
+    cout << "The second proof had " << ((premise_2.size()>1)?"more":"fewer") << " than 1 premise.\n";
+  else if(strcmp(premise_1[0], form_2) != 0 || strcmp(premise_2[0], form_1) != 0)
+    cout << "The premise of one proof does not match the goal of the other.\n";
+  else return true;
+  
+  return false;
 }
 

@@ -121,7 +121,7 @@
 	<antecedent subproof="a" form="b" />
 </inference>
 
-<inference rulename="Modus Ponens" conseqent="b">
+<inference rulename="Modus Ponens" consequent="b">
 	<antecedent form="a>b" />
 	<antecedent form="a" />
 </inference>

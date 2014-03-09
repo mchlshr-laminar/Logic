@@ -129,6 +129,7 @@ Justification* ProofRules::readEquivalenceRule(xml_node<>* rule_node, char* rule
 	
 	if(!has_added_pairs)
 	{
+    cerr << "Error in rules file: equivalence " << rule_name << " is empty and cannot be created.\n";
 		delete created_rule;
 		return NULL;
 	}
@@ -138,7 +139,11 @@ Justification* ProofRules::readEquivalenceRule(xml_node<>* rule_node, char* rule
 Justification* ProofRules::readInferenceRule(xml_node<>* rule_node, char* rule_name)
 {
 	xml_attribute<>* consequent = rule_node->first_attribute("consequent");
-	if(consequent == NULL || consequent->value_size() <= 0) return NULL;
+	if(consequent == NULL || consequent->value_size() <= 0)
+  {
+    cerr << "Error in rules file: " << rule_name << " has no consequent and cannot be created.\n";
+    return NULL;
+  }
 	InferenceRule* created_rule = new InferenceRule(consequent->value(), rule_name);
 	
 	xml_node<>* ant_node = rule_node->first_node("antecedent");

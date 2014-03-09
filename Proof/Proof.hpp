@@ -55,10 +55,11 @@ class Proof
   
   void removeLine();
   
-  //Right now lemmas will not be added to the ruleset for subsequent lemmas; this should change.
   bool addEquivalenceRule(const char* form1, const char* form2, const char* name);
   bool addInferenceRule(const std::vector<char*>& antecedents, const char* goal, const char* name);
   
+  //A proof that ends with a subproof will cause verification to fail due to the empty statement after it.
+  //I'm not sure why anyone would end a proof with a subproof, but this is not ideal.
   bool verifyProof();
   void printProof();
   char* createGoalString();
