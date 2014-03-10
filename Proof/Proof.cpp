@@ -1,6 +1,6 @@
-#include "Proof.hpp"
-#include "ProofRules.hpp"
-#include "../Statements/StatementTree.hpp"
+#include "Proof/Proof.hpp"
+#include "Proof/ProofRules.hpp"
+#include "Statements/StatementTree.hpp"
 #include <iostream>
 #include <stack>
 #include <utility>

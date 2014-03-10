@@ -1,7 +1,7 @@
-#include "ProofRules.hpp"
-#include "../Justifications/InferenceRules.hpp"
-#include "../Justifications/EquivalenceRules.hpp"
-#include "../Justifications/AggregateJustification.hpp"
+#include "Proof/ProofRules.hpp"
+#include "Justifications/InferenceRules.hpp"
+#include "Justifications/EquivalenceRules.hpp"
+#include "Justifications/AggregateJustification.hpp"
 #include <cstring>
 #include <sstream>
 #include <unistd.h>

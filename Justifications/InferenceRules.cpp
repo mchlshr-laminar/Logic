@@ -1,5 +1,5 @@
-#include "InferenceRules.hpp"
-#include "../Statements/SubProof.hpp"
+#include "Justifications/InferenceRules.hpp"
+#include "Statements/SubProof.hpp"
 #include <utility>
 #include <iostream>
 

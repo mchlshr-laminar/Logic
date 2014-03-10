@@ -3,9 +3,9 @@
 
 class EquivalenceRule;
 
-#include "Justification.hpp"
-#include "../Statements/StatementTree.hpp"
-#include "../Statements/ProofStatement.hpp"
+#include "Justifications/Justification.hpp"
+#include "Statements/StatementTree.hpp"
+#include "Statements/ProofStatement.hpp"
 #include <utility>
 #include <list>
 

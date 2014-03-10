@@ -1,13 +1,13 @@
 #ifndef __PROOF_H_
 #define __PROOF_H_
 
-#include "../Statements/ProofStatement.hpp"
-#include "../Statements/SubProof.hpp"
-#include "../Statements/StatementTree.hpp"
-#include "../Justifications/Justification.hpp"
-#include "../Justifications/InferenceRules.hpp"
-#include "../Justifications/EquivalenceRules.hpp"
-#include "../Justifications/AggregateJustification.hpp"
+#include "Statements/ProofStatement.hpp"
+#include "Statements/SubProof.hpp"
+#include "Statements/StatementTree.hpp"
+#include "Justifications/Justification.hpp"
+#include "Justifications/InferenceRules.hpp"
+#include "Justifications/EquivalenceRules.hpp"
+#include "Justifications/AggregateJustification.hpp"
 #include <cstring>
 #include <map>
 #include <vector>

@@ -1,4 +1,4 @@
-#include "ProofReader.hpp"
+#include "Proof/ProofReader.hpp"
 #include <cstdlib>
 #include <utility>
 

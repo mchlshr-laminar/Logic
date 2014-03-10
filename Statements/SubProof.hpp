@@ -3,8 +3,8 @@
 
 class SubProof;
 
-#include "ProofStatement.hpp"
-#include "../Justifications/Justification.hpp"
+#include "Statements/ProofStatement.hpp"
+#include "Justifications/Justification.hpp"
 
 //Represents a subproof. Is a subclass of ProofStatement so that
 //antecedents can be statements or subproofs.

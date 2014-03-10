@@ -1,4 +1,4 @@
-#include "Justification.hpp"
+#include "Justifications/Justification.hpp"
 #include <cstring>
 
 //Stores the name of this rule.

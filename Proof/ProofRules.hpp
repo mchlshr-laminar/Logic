@@ -4,8 +4,8 @@
 #define DEFAULT_RULES_FILENAME "rules.xml"
 #define RULE_CHUNK_SIZE 20
 
-#include "../rapidxml/rapidxml.hpp"
-#include "../Justifications/Justification.hpp"
+#include "rapidxml/rapidxml.hpp"
+#include "Justifications/Justification.hpp"
 #include <map>
 #include <string>
 

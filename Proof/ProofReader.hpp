@@ -1,7 +1,7 @@
 #ifndef __PROOF_READER_H_
 #define __PROOF_READER_H_
 
-#include "Proof.hpp"
+#include "Proof/Proof.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>

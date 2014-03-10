@@ -1,5 +1,5 @@
-#include "Justification.hpp"
-#include "AggregateJustification.hpp"
+#include "Justifications/Justification.hpp"
+#include "Justifications/AggregateJustification.hpp"
 #include <iostream>
 
 using std::list;
