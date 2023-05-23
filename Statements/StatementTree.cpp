@@ -361,12 +361,12 @@ char StatementTree::typeOperator(int input)
 
 //For printing the sentence in a tree format. Not currently used except
 //for debugging.
-void StatementTree::temp(int depth)
+void StatementTree::DrawDebugGraph(int depth)
 {
   for(int i = 0; i < depth; i++) std::cout << ' ';
   if(!is_affirmed) std::cout << '!';
   if(node_type != ATOM) std::cout << typeOperator(node_type) << '\n';
   else std::cout << atom_name << '\n';
   for(list<StatementTree*>::iterator itr = children.begin(); itr != children.end(); itr++)
-    (*itr)->temp(depth+1);
+    (*itr)->DrawDebugGraph(depth+1);
 }
