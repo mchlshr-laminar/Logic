@@ -1,7 +1,7 @@
 #ifndef __AGGREGATE_JUSTIFICATION_H_
 #define __AGGREGATE_JUSTIFICATION_H_
 
-#include "Justifications/Justification.hpp"
+#include "Justification.hpp"
 #include <list>
 
 //Stores a justification rule which has more than one possible format

@@ -1,0 +1,6 @@
+/.vs/
+CMakeSettings.json
+/Debug/
+/TestInput.txt
+/TestInput2.txt
+/out/

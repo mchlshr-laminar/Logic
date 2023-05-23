@@ -1,5 +1,5 @@
-#include "Proof/Proof.hpp"
-#include "Proof/ProofReader.hpp"
+#include "Proof.hpp"
+#include "ProofReader.hpp"
 #include <iostream>
 
 using std::cout;

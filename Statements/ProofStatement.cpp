@@ -1,4 +1,4 @@
-#include "Statements/ProofStatement.hpp"
+#include "ProofStatement.hpp"
 #include <iostream>
 #include <sstream>
 #include <string>

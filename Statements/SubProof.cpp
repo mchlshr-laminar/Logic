@@ -1,4 +1,4 @@
-#include "Statements/SubProof.hpp"
+#include "SubProof.hpp"
 #include <utility>
 
 using std::pair;

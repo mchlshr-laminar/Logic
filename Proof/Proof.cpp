@@ -1,6 +1,6 @@
-#include "Proof/Proof.hpp"
-#include "Proof/ProofRules.hpp"
-#include "Statements/StatementTree.hpp"
+#include "Proof.hpp"
+#include "ProofRules.hpp"
+#include "StatementTree.hpp"
 #include <iostream>
 #include <stack>
 #include <utility>
@@ -63,9 +63,86 @@ void Proof::addLine()
   if(current_position >= 0 && current_position < (int)proof_data.size())
     new_statement->setParent(proof_data[current_position]->getParent());
   
-  proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
+  proof_list::iterator ins_pos = getLineInsertionIterator();
   proof_data.insert(ins_pos, new_statement);
   current_position++;
+}
+
+//Adds a premise line after the focused line (or at the end of the premises
+//if focus is not on a premise) and sets focus to the new line.
+void Proof::addPremiseLine()
+{
+	if (current_position > last_premise) current_position = last_premise;
+	//Premises before derivation.
+
+	ProofStatement* new_premise = new ProofStatement("");
+	new_premise->setJustification(&premise_just);
+
+	proof_list::iterator ins_pos = getLineInsertionIterator();
+	proof_data.insert(ins_pos, new_premise);
+	current_position++;
+	last_premise++;
+}
+
+//Adds a new subproof assumption line (creating a new subproof). Will
+//be placed after the currently focused line, or after the premises if
+//focus is in the premises. Subproof's parent will be the same as the
+//previously focused line. Sets focus to the new assumption line.
+//If the focused line has an empty sentence, deletes the line & replaces
+//it.
+void Proof::addSubproofLine()
+{
+	if (current_position < last_premise) current_position = last_premise;
+	//Premises before derivation
+
+	SubProof* new_proof = new SubProof("");
+
+	if (current_position >= 0 && current_position < (int)proof_data.size())
+	{
+		new_proof->setParent(proof_data[current_position]->getParent());
+		char* test = proof_data[current_position]->getStatementData()->createDisplayString();
+		bool is_empty = strcmp(test, "") == 0;
+		delete[] test;
+		if (is_empty)
+			removeLine();
+	}
+
+	proof_list::iterator ins_pos = getLineInsertionIterator();
+	proof_data.insert(ins_pos, new_proof->getAssumptionStatement());
+	current_position++;
+}
+
+//Adds a new proof line as per AddLine, except that it will be in the current
+//subproof's parent. If the focused line is not in a subproof, does nothing.
+void Proof::endSubproof()
+{
+	if (current_position == -1 || proof_data[current_position]->getParent() == NULL)
+	{
+		addLine();
+		return;
+	}
+
+	addLine();
+	ProofStatement* new_parent = proof_data[current_position]->getParent();
+	new_parent = new_parent->getParent();
+	proof_data[current_position]->setParent(new_parent);
+}
+
+//Get an iterator to insert a line after the currently focused line.
+proof_list::iterator Proof::getLineInsertionIterator()
+{
+	if (current_position >= (int)proof_data.size())
+	{
+		//current_position may be -1 and size() returns an unsigned value
+		cerr << "Position is after the end of the proof\n";
+		return proof_data.begin();
+	}
+
+	if (proof_data.size() == 0)
+	{
+		return proof_data.begin();
+	}
+	return proof_data.begin() + current_position + 1;
 }
 
 //Searches for the justification rule with the given name. If found and the
@@ -85,73 +162,19 @@ void Proof::setJustification(const char* justification_name)
 //line is not before the focus.
 void Proof::toggleAntecedent(int antecedent_index)
 {
-  if(antecedent_index <= 0 || antecedent_index > (int)proof_data.size()) return;
+	//TODO: Why was this this way?
+  /*if(antecedent_index <= 0 || antecedent_index > (int)proof_data.size()) return;
   if(current_position <= last_premise || antecedent_index > current_position)
     return;
   
   proof_data[current_position]->toggleAntecedent(proof_data[antecedent_index-1]);
   StatementTree* t = proof_data[antecedent_index-1]->getStatementData();
-  if(t == NULL) t = proof_data[antecedent_index-1]->getAssumption();
-}
+  if(t == NULL) t = proof_data[antecedent_index-1]->getAssumption();*/
 
-//Adds a premise line after the focused line (or at the end of the premises
-//if focus is not on a premise) and sets focus to the new line.
-void Proof::addPremiseLine()
-{
-  if(current_position > last_premise) current_position = last_premise;
-  //Premises before derivation.
-  
-  ProofStatement* new_premise = new ProofStatement("");
-  new_premise->setJustification(&premise_just);
-  
-  proof_list::iterator ins_pos = proof_data.begin()+1+current_position;
-  proof_data.insert(ins_pos, new_premise);
-  current_position++;
-  last_premise++;
-}
+	if (antecedent_index < 0 || antecedent_index >= (int)proof_data.size()) return;
+	if (current_position <= last_premise || antecedent_index >= current_position) return;
 
-//Adds a new subproof assumption line (creating a new subproof). Will
-//be placed after the currently focused line, or after the premises if
-//focus is in the premises. Subproof's parent will be the same as the
-//previously focused line. Sets focus to the new assumption line.
-//If the focused line has an empty sentence, deletes the line & replaces
-//it.
-void Proof::addSubproofLine()
-{
-  if(current_position < last_premise) current_position = last_premise;
-  //Premises before derivation
-  
-  SubProof* new_proof = new SubProof("");
-  
-  if(current_position >= 0 && current_position < (int)proof_data.size())
-  {
-    new_proof->setParent(proof_data[current_position]->getParent());
-    char* test =  proof_data[current_position]->getStatementData()->createDisplayString();
-    bool is_empty = strcmp(test, "") == 0;
-    delete [] test;
-    if(is_empty)
-      removeLine();
-  }
-  
-  proof_list::iterator ins_pos = proof_data.begin()+current_position+1;
-  proof_data.insert(ins_pos, new_proof->getAssumptionStatement());
-  current_position++;
-}
-
-//Adds a new proof line as per AddLine, except that it will be in the current
-//subproof's parent. If the focused line is not in a subproof, does nothing.
-void Proof::endSubproof()
-{
-  if(current_position == -1 || proof_data[current_position]->getParent() == NULL)
-  {
-    addLine();
-    return;
-  }
-  
-  addLine();
-  ProofStatement* new_parent = proof_data[current_position]->getParent();
-  new_parent = new_parent->getParent();
-  proof_data[current_position]->setParent(new_parent);
+	proof_data[current_position]->toggleAntecedent(proof_data[antecedent_index]);
 }
 
 //Removes the focused line and decrements the focus.

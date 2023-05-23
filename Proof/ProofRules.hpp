@@ -4,15 +4,15 @@
 #define DEFAULT_RULES_FILENAME "rules.xml"
 #define RULE_CHUNK_SIZE 20
 
-#include "rapidxml/rapidxml.hpp"
-#include "Justifications/Justification.hpp"
+#include "rapidxml.hpp"
+#include "Justification.hpp"
 #include <map>
 #include <string>
 
 class StringMapper
 {
   public:
-  bool operator()(std::string str1, std::string str2)
+  bool operator()(std::string str1, std::string str2) const
   { return str1.compare(str2) < 0; }
 };
 

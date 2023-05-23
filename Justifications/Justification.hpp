@@ -7,8 +7,8 @@
 
 class Justification;
 
-#include "Statements/StatementTree.hpp"
-#include "Statements/ProofStatement.hpp"
+#include "StatementTree.hpp"
+#include "ProofStatement.hpp"
 
 typedef std::map<char, StatementTree*> bind_map;
 typedef std::map<ProofStatement*, int> statement_usage_map;

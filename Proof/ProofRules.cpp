@@ -1,12 +1,19 @@
-#include "Proof/ProofRules.hpp"
-#include "Justifications/InferenceRules.hpp"
-#include "Justifications/EquivalenceRules.hpp"
-#include "Justifications/AggregateJustification.hpp"
+#include "ProofRules.hpp"
+#include "InferenceRules.hpp"
+#include "EquivalenceRules.hpp"
+#include "AggregateJustification.hpp"
 #include <cstring>
 #include <sstream>
-#include <unistd.h>
 #include <fcntl.h>
 #include <iostream>
+
+#if defined(_WIN32)
+#include <io.h>
+
+#else
+#include <unistd.h>
+
+#endif
 
 using std::stringstream;
 using std::string;

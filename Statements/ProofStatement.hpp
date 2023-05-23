@@ -8,8 +8,8 @@ class ProofStatement;
 typedef std::list<ProofStatement*> ant_list;
 typedef std::set<ProofStatement*> statement_set;
 
-#include "Statements/StatementTree.hpp"
-#include "Justifications/Justification.hpp"
+#include "StatementTree.hpp"
+#include "Justification.hpp"
 
 //Represents one statement in the proof
 class ProofStatement

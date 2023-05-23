@@ -1,4 +1,4 @@
-#include "Justifications/EquivalenceRules.hpp"
+#include "EquivalenceRules.hpp"
 #include <list>
 #include <utility>
 #include <iostream>

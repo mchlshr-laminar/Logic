@@ -3,9 +3,9 @@
 
 class InferenceRule;
 
-#include "Justifications/Justification.hpp"
-#include "Statements/StatementTree.hpp"
-#include "Statements/ProofStatement.hpp"
+#include "Justification.hpp"
+#include "StatementTree.hpp"
+#include "ProofStatement.hpp"
 #include <utility>
 #include <list>
 

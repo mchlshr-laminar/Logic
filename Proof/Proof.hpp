@@ -1,13 +1,13 @@
 #ifndef __PROOF_H_
 #define __PROOF_H_
 
-#include "Statements/ProofStatement.hpp"
-#include "Statements/SubProof.hpp"
-#include "Statements/StatementTree.hpp"
-#include "Justifications/Justification.hpp"
-#include "Justifications/InferenceRules.hpp"
-#include "Justifications/EquivalenceRules.hpp"
-#include "Justifications/AggregateJustification.hpp"
+#include "ProofStatement.hpp"
+#include "SubProof.hpp"
+#include "StatementTree.hpp"
+#include "Justification.hpp"
+#include "InferenceRules.hpp"
+#include "EquivalenceRules.hpp"
+#include "AggregateJustification.hpp"
 #include <cstring>
 #include <map>
 #include <vector>
@@ -58,6 +58,7 @@ class Proof
   
   private:
   void printProofLine(int index);
+  proof_list::iterator getLineInsertionIterator();
 };
 
 #endif
