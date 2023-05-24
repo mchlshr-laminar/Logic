@@ -86,7 +86,7 @@ char* ProofStatement::createDisplayString()
   else
     result << reason->getName() << " ";
     
-  ant_list::iterator itr = antecedents.begin();
+  antecedent_list::iterator itr = antecedents.begin();
   for(; itr != antecedents.end(); itr++)
     result << ((*itr)->getLineIndex()+1) << ", ";
   
@@ -125,7 +125,7 @@ bool ProofStatement::toggleAntecedent(ProofStatement* ant)
   ant = getRelevantAncestor(ant);
   
   if(ant == NULL) return false;
-  for(ant_list::iterator itr = antecedents.begin(); itr != antecedents.end(); itr++)
+  for(antecedent_list::iterator itr = antecedents.begin(); itr != antecedents.end(); itr++)
   {
     if(*itr == ant) //Comparing addresses
     {
@@ -151,7 +151,7 @@ void ProofStatement::setLineIndex(int i)
 
 //Toggles whether or not the given statement is in the set of children
 //Is private, only used by setParent
-bool ProofStatement::toggleChild(ProofStatement* ch)
+bool ProofStatement::toggleChild(ProofStatement* childStatement)
 { return false; }
 
 //Returns the closest ancestor of the given statement which would be admissable

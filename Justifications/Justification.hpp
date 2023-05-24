@@ -23,7 +23,7 @@ class Justification
   Justification(const char* name);
   virtual ~Justification();
   
-  virtual bool isJustified(StatementTree& con, ant_list& ant) = 0;
+  virtual bool isJustified(StatementTree& con, antecedent_list& ant) = 0;
   char* getName();
   
   protected:
@@ -31,13 +31,14 @@ class Justification
   void removeNewlyBoundForms(bind_map& new_binds, bind_map& old_binds);
 };
 
+//TODO: This could be a singleton maybe?
 class Assumption : public Justification
 {
   public:
   Assumption() : Justification("Assumed")
   {}
   
-  bool isJustified(StatementTree& con, ant_list& ant)
+  bool isJustified(StatementTree& con, antecedent_list& ant)
   { return ant.size() == 0; }
 };
 

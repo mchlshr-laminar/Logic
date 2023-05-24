@@ -16,7 +16,7 @@ class AggregateJustification : public Justification
   {}
   virtual ~AggregateJustification();
   
-  bool isJustified(StatementTree& con, ant_list& ant);
+  bool isJustified(StatementTree& con, antecedent_list& ant);
   
   void addRule(Justification* new_rule);
 };

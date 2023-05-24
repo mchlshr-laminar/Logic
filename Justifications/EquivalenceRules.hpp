@@ -29,7 +29,7 @@ class EquivalenceRule : public Justification
   
   void addEquivalentPair(const char* form1, const char* form2);
   
-  bool isJustified(StatementTree& con, ant_list& ant);
+  bool isJustified(StatementTree& con, antecedent_list& ant);
 };
 
 #endif

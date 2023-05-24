@@ -22,11 +22,11 @@ class InferenceRule : public Justification
   
   bool match(StatementTree* target, StatementTree* form, bind_map& binds);
   
-  bool findAntecedentsForForms(std::list<form_pair>::iterator form, ant_list& ant,
+  bool findAntecedentsForForms(std::list<form_pair>::iterator form, antecedent_list& ant,
     bind_map& binds, statement_usage_map& ant_usage);
-  bool findAntecedentsForBasicForm(std::list<form_pair>::iterator form, ant_list& ant,
+  bool findAntecedentsForBasicForm(std::list<form_pair>::iterator form, antecedent_list& ant,
     bind_map& binds, statement_usage_map& ant_usage);
-  bool findAntecedentsForSubProof(std::list<form_pair>::iterator form, ant_list& ant,
+  bool findAntecedentsForSubProof(std::list<form_pair>::iterator form, antecedent_list& ant,
     bind_map& binds, statement_usage_map& ant_usage);
   
   bool checkAntecedentRelevance(statement_usage_map& ant_usage);
@@ -40,7 +40,7 @@ class InferenceRule : public Justification
   
   void addRequiredForm(const char* statement, const char* assumption=NULL);
   
-  bool isJustified(StatementTree& con, ant_list& ant);
+  bool isJustified(StatementTree& con, antecedent_list& ant);
 };
 
 #endif

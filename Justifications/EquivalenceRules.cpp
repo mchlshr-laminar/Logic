@@ -32,7 +32,7 @@ void EquivalenceRule::addEquivalentPair(const char* form1, const char* form2)
   equivalent_pairs.push_back(new_equivalence);
 }
 
-bool EquivalenceRule::isJustified(StatementTree& con, ant_list& ant)
+bool EquivalenceRule::isJustified(StatementTree& con, antecedent_list& ant)
 {
   if(ant.size() != 1) return false;
   return areEquivalent(&con, ant.front()->getStatementData());
