@@ -171,7 +171,7 @@ protected:
     /// for normal proof lines.
     /// </summary>
     /// <param name="ch"></param>
-    /// <returns></returns>
+    /// <returns>false</returns>
     virtual bool toggleChild(ProofStatement* childStatement);
 
 #pragma endregion

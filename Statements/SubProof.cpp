@@ -4,9 +4,7 @@
 using std::pair;
 
 Assumption SubProof::subproof_assumption;
-//Static justification for subproof assumptions.
-
-//Most comments are in ProofStatement
+//Static justification for all subproof assumptions.
 
 SubProof::SubProof(const char* input) : ProofStatement(input)
 {
@@ -63,9 +61,9 @@ void SubProof::rewrite(StatementTree* input)
 bool SubProof::toggleAntecedent(ProofStatement* ant)
 { return false; }
 
-bool SubProof::toggleChild(ProofStatement* ch)
+bool SubProof::toggleChild(ProofStatement* childStatement)
 {
-  pair<statement_set::iterator, bool> result = contents.insert(ch);
+  pair<statement_set::iterator, bool> result = contents.insert(childStatement);
   if(result.second) return false;
   contents.erase(result.first);
   return true;
