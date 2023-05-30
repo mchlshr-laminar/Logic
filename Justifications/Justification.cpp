@@ -38,17 +38,6 @@ void Justification::removeBoundForms(bind_map& binds)
 //not appear in old_binds.
 void Justification::removeNewlyBoundForms(bind_map& new_binds, bind_map& old_binds)
 {
-  /*for(bind_map::iterator itr = new_binds.begin(); itr != new_binds.end(); itr++)
-  {
-    if(old_binds.find(itr->first) == old_binds.end())
-    {
-      delete itr->second;
-      bind_map::iterator temp = itr;
-      itr++;
-      new_binds.erase(temp);
-    }
-  }*/
-
   bind_map::iterator next_itr = new_binds.begin();
   while (next_itr != new_binds.end())
   {

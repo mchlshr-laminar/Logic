@@ -15,12 +15,13 @@ AggregateJustification::~AggregateJustification()
 }
 
 //Checks if the given consequent is justified under any of the subrules.
-bool AggregateJustification::isJustified(StatementTree& con, antecedent_list& ant)
+bool AggregateJustification::isJustified(StatementTree& consequent, 
+    antecedent_list& antecedents)
 {
   list<Justification*>::iterator itr = rules.begin();
   for(; itr != rules.end(); itr++)
   {
-    if((*itr)->isJustified(con, ant))
+    if((*itr)->isJustified(consequent, antecedents))
     {
       return true;
     }
