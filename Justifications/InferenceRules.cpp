@@ -11,11 +11,14 @@ using std::endl;
 
 InferenceRule::~InferenceRule()
 {
-  list<form_pair>::iterator itr = required_forms.begin();
-  for(; itr != required_forms.end(); itr++)
+  for each (required_form* form in required_forms)
   {
-    delete FORM_STATEMENT(*itr);
-    if(FORM_ASSUMPTION(*itr) != NULL) delete FORM_ASSUMPTION(*itr);
+    delete form->statementForm;
+    if (form->subproofAssumptionForm != NULL)
+    {
+      delete form->subproofAssumptionForm;
+    }
+
   }
 }
 
@@ -23,13 +26,15 @@ InferenceRule::~InferenceRule()
 //to be used.
 void InferenceRule::addRequiredForm(const char* statement, const char* assumption)
 {
-  if(assumption == NULL)
-    required_forms.push_back(form_pair(NULL, new StatementTree(statement)));
+  required_form* new_form = new required_form;
+
+  new_form->statementForm = new StatementTree(statement);
+  if (assumption != NULL)
+    new_form->subproofAssumptionForm = new StatementTree(assumption);
   else
-  {
-    required_forms.push_back(form_pair(new StatementTree(assumption),
-      new StatementTree(statement)));
-  }
+    new_form->subproofAssumptionForm = NULL;
+
+  required_forms.push_back(new_form);
 }
 
 //Returns true if and only if the given consequent & antecedents can be matched
@@ -68,13 +73,13 @@ bool InferenceRule::isJustified(StatementTree& con, antecedent_list& ant)
 //contingent on previously bound sentence variables. On a successful match,
 //continues to the next required form. If all required forms have a corresponding
 //antecedent, returns true iff there are no unused antecedents.
-bool InferenceRule::findAntecedentsForForms(list<form_pair>::iterator form, 
+bool InferenceRule::findAntecedentsForForms(required_form_list::iterator form,
   antecedent_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
   //At the end, check if any antecedents were unused.
   if(form == required_forms.end()) return checkAntecedentRelevance(ant_usage);
   
-  if(FORM_ASSUMPTION(*form)==NULL)
+  if((*form)->subproofAssumptionForm==NULL)
     return findAntecedentsForBasicForm(form, ant, binds, ant_usage);
   else
     return findAntecedentsForSubProof(form, ant, binds, ant_usage);
@@ -82,13 +87,13 @@ bool InferenceRule::findAntecedentsForForms(list<form_pair>::iterator form,
 
 //Helper function for findAntecedentsForForms for when the form is not a
 //subproof form.
-bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form, 
+bool InferenceRule::findAntecedentsForBasicForm(required_form_list::iterator form,
   antecedent_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
   //The copy of the variable binding map is so new bindings can be removed if
   //a branch doesn't work out.
   bind_map temp_binds(binds);
-  list<form_pair>::iterator next_form = form;
+  required_form_list::iterator next_form = form;
   next_form++;
   
   //Try each antecedent for this form.
@@ -99,7 +104,7 @@ bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form,
     if(ant_data == NULL) continue; //Statement was a subproof
     
     //Attempt to match
-    bool result = match(ant_data, FORM_STATEMENT(*form), temp_binds);
+    bool result = match(ant_data, (*form)->statementForm, temp_binds);
     if(result)
     {
       //If successful, move on to the next required form.
@@ -115,13 +120,13 @@ bool InferenceRule::findAntecedentsForBasicForm(list<form_pair>::iterator form,
 }
 
 //Helper function for findAntecedentsForForms for a subproof form.
-bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form, 
+bool InferenceRule::findAntecedentsForSubProof(required_form_list::iterator form,
   antecedent_list& ant, bind_map& binds, statement_usage_map& ant_usage)
 {
   //The copy of the variable binding map is so new bindings can be removed if
   //a branch doesn't work out.
   bind_map statement_binds(binds);
-  list<form_pair>::iterator next_form = form;
+  required_form_list::iterator next_form = form;
   next_form++;
   
   for(antecedent_list::iterator itr = ant.begin(); itr != ant.end(); itr++)
@@ -132,7 +137,7 @@ bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form,
     statement_set* contents = (*itr)->getSubproofContents();
     if(assumption == NULL) continue; //Statement wasn't a subproof
     
-    bool result = match(assumption, FORM_ASSUMPTION(*form), statement_binds);
+    bool result = match(assumption, (*form)->subproofAssumptionForm, statement_binds);
     if(!result) //Assumption didn't match
     {
       removeNewlyBoundForms(statement_binds, binds);
@@ -149,7 +154,7 @@ bool InferenceRule::findAntecedentsForSubProof(list<form_pair>::iterator form,
       StatementTree* sub_statement = (*sub_itr)->getStatementData();
       if(sub_statement == NULL) continue;
       
-      result = match(sub_statement, FORM_STATEMENT(*form), substatement_binds);
+      result = match(sub_statement, (*form)->statementForm, substatement_binds);
       if(result)
       {
         ant_usage[*itr]++;

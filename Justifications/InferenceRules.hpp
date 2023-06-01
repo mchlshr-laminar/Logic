@@ -9,24 +9,35 @@ class InferenceRule;
 #include <utility>
 #include <list>
 
-typedef std::pair<StatementTree*, StatementTree*> form_pair;
-#define FORM_ASSUMPTION(x) (x).first
-#define FORM_STATEMENT(x) (x).second
+/// <summary>
+/// Stores the format which must be matched by one of a line's antecedents for
+/// this rule to be applicable. If the rule requires a subproof, 
+/// subproofAssumptionForm is the form that the assumption of that subproof
+/// must have while statementForm is the form which must be found on some
+/// line of the subproof. If the required form is not a subproof, 
+/// subproofAssumptionForm will be null and statementForm has the form.
+/// </summary>
+struct required_form
+{
+  StatementTree* subproofAssumptionForm;
+  StatementTree* statementForm;
+};
+typedef std::list<required_form*> required_form_list;
 
 //Checks justification based on an inference rule
 class InferenceRule : public Justification
 {
   private:
   StatementTree result_form;
-  std::list<form_pair> required_forms;
+  required_form_list required_forms;
   
   bool match(StatementTree* target, StatementTree* form, bind_map& binds);
   
-  bool findAntecedentsForForms(std::list<form_pair>::iterator form, antecedent_list& ant,
+  bool findAntecedentsForForms(required_form_list::iterator form, antecedent_list& ant,
     bind_map& binds, statement_usage_map& ant_usage);
-  bool findAntecedentsForBasicForm(std::list<form_pair>::iterator form, antecedent_list& ant,
+  bool findAntecedentsForBasicForm(required_form_list::iterator form, antecedent_list& ant,
     bind_map& binds, statement_usage_map& ant_usage);
-  bool findAntecedentsForSubProof(std::list<form_pair>::iterator form, antecedent_list& ant,
+  bool findAntecedentsForSubProof(required_form_list::iterator form, antecedent_list& ant,
     bind_map& binds, statement_usage_map& ant_usage);
   
   bool checkAntecedentRelevance(statement_usage_map& ant_usage);
