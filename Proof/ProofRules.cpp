@@ -29,6 +29,8 @@ justification_map ProofRules::rules;
 //Creates the initial rule map from the XML input file.
 void ProofRules::readRulesFromFile()
 {
+	if (!rules_need_reading) return; //We've already done this
+
 	//Open and read file to a stringstream.
 	stringstream input_string;
 	char* input_buffer = new char[RULE_CHUNK_SIZE+1];
@@ -212,9 +214,6 @@ Justification* ProofRules::readAggregateRule(xml_node<>* rule_node, char* rule_n
 Justification* ProofRules::findRule(const char* rule_name)
 {
   if(rules_need_reading) readRulesFromFile();
-  //If a user lemma is defined before any justification rules have been used (including in lemma proofs) then
-  //this could be a problem. I don't think that's possible though; investigate.
-  //Something else using addRule could be problematic though.
   
   justification_map::iterator itr = rules.find(string(rule_name));
   if(itr == rules.end()) return NULL;
@@ -226,6 +225,10 @@ Justification* ProofRules::findRule(const char* rule_name)
 bool ProofRules::addRule(Justification* added_rule)
 {
   if(added_rule == NULL) return false;
+
+  //If the rules file hasn't been read yet we won't know if the name of this
+  //justification is already used.
+  if (rules_need_reading) readRulesFromFile();
   
   char* rule_name = added_rule->getName();
   if(rule_name == NULL || strcmp(rule_name, "") == 0 || rules.find(string(rule_name)) != rules.end())
