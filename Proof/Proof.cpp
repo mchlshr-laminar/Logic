@@ -113,9 +113,10 @@ void Proof::addSubproofLine()
 }
 
 //Adds a new proof line as per AddLine, except that it will be in the current
-//subproof's parent. If the focused line is not in a subproof, does nothing.
+//subproof's parent.
 void Proof::endSubproof()
 {
+    //TODO: check that we aren't in the middle of a subproof.
 	if (current_position == -1 || proof_data[current_position]->getParent() == NULL)
 	{
 		addLine();
@@ -162,23 +163,15 @@ void Proof::setJustification(const char* justification_name)
 //line is not before the focus.
 void Proof::toggleAntecedent(int antecedent_index)
 {
-	//TODO: Why was this this way?
-  /*if(antecedent_index <= 0 || antecedent_index > (int)proof_data.size()) return;
-  if(current_position <= last_premise || antecedent_index > current_position)
-    return;
-  
-  proof_data[current_position]->toggleAntecedent(proof_data[antecedent_index-1]);
-  StatementTree* t = proof_data[antecedent_index-1]->getStatementData();
-  if(t == NULL) t = proof_data[antecedent_index-1]->getAssumption();*/
-
 	if (antecedent_index < 0 || antecedent_index >= (int)proof_data.size()) return;
 	if (current_position <= last_premise || antecedent_index >= current_position) return;
+    if (proof_data[current_position]->isAssumption()) return;
 
 	proof_data[current_position]->toggleAntecedent(proof_data[antecedent_index]);
 }
 
 //Removes the focused line and decrements the focus.
-//MEMORY LEAKS
+//TODO: Redo this
 void Proof::removeLine()
 {
   if(current_position == -1) return;
