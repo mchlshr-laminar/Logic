@@ -203,6 +203,19 @@ open, the new subproof will be in them.
 end
 Closes the most recently opened subproof which has not already been closed.
 
+inf <rule name>:<filename>
+Creates a new inference rule that can be used elsewhere in the proof. The named
+file must contain a lemma proof where the goal statement is the consequent form 
+of the new rule and each of the premises of the lemma proof is one of the antecedent
+forms of the rule. Subsequent lines in the top-level proof can use this rule as
+justification. The lemma proof must be justified for the rule to be added.
+
+equ <rule name>:<filename 1>:<filename 2>
+Creates a new equivalence rule that can be used elsewhere in the proof. File 1
+must contain a lemma proof with a single premise of the first equivalent form
+and a goal of the second equivalent form. File 2 is the reverse. Both proofs must
+be justified for the rule to be added.
+
 ===========Example Input File===========
 pre a|b
 pre !b
