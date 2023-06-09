@@ -16,8 +16,9 @@ using std::vector;
 void ProofReader::setTarget(Proof* new_target)
 {
   target = new_target;
-  new_line_needed = true;
+  new_line_needed = true; //When ending a subproof, an empty new line is added, so the next line read will use that instead of creating a new one.
   derivation_started = false;
+  //TODO: Clear any existing data in new_target?
 }
 
 //Reads the file with the given name to the proof object.
@@ -26,6 +27,7 @@ bool ProofReader::readFile(const char* filename)
   line_number_offset = 0;
   line_number_translation.clear();
   
+  //Open the file
   if(target == NULL)
   {
     cerr << "Error: no proof to read file " << filename << "into \n";
@@ -40,6 +42,7 @@ bool ProofReader::readFile(const char* filename)
   
   while(!reader.eof())
   {
+    //Read the input file line by line
     char* temp = readLine();
     char* line = temp; //this pointer moves
     while(*line == ' ' || *line == '\t') line++;
@@ -53,6 +56,8 @@ bool ProofReader::readFile(const char* filename)
     
     if(strncmp(line, PREMISE_COMMAND, 4) == 0)
     {
+      //Add a premise to the proof. The input file should have all the premises listed
+      //before any derivation starts.
       if(derivation_started)
       {
         cerr << "Error: premise after start of derivation in file " << filename << "\n";
@@ -62,6 +67,8 @@ bool ProofReader::readFile(const char* filename)
     }
     else if(strncmp(line, PROOFLINE_COMMAND, 4) == 0)
     {
+      //Add a line of derivation. If the prior line was in a subproof, this line will
+      //be in the same one.
       derivation_started = true;
       if(!lin(line+3))
       {
@@ -71,36 +78,42 @@ bool ProofReader::readFile(const char* filename)
     }
     else if(strncmp(line, SUBPROOF_COMMAND, 4) == 0)
     {
+      //Start a new subproof and add its assumption line.
       derivation_started = true;
       sub(line+3);
     }
     else if(strcmp(line, SUBPROOF_END_COMMAND) == 0)
     {
+      //Create an empty line which is not in the (innermost) subproof that the last line was
       derivation_started = true;
       end(line+3);
     }
     else if(strncmp(line, GOAL_DEF_COMMAND, 4) == 0)
     {
+      //Define the goal of the proof
       gol(line+3);
     }
 	else if(strncmp(line, EQUIVALENCE_LEMMA_COMMAND, 4) == 0)
 	{
-    if(!equ(line+3))
-    {
-       malformedLine(filename, line);
-       return false;
-    }
+      //Add an equivalence rule based on a lemma in the proof
+      if(!equ(line+3))
+      {
+         malformedLine(filename, line);
+         return false;
+      }
 	}
 	else if(strncmp(line, INFERENCE_LEMMA_COMMAND, 4) == 0)
 	{
-    if(!inf(line+3))
-    {
-       malformedLine(filename, line);
-       return false;
-    }
+      //Add an inference rule based on a lemma in the proof
+      if(!inf(line+3))
+      {
+         malformedLine(filename, line);
+         return false;
+      }
 	}
     else
     {
+      //Oops
       cerr << "Error: unrecognized command in line: " << line << " from file " << filename << "\n";
       return false;
     }
@@ -115,6 +128,7 @@ bool ProofReader::readFile(const char* filename)
 //terminating '\r' if present to account for DOS filetypes.
 char* ProofReader::readLine()
 {
+  //Read the line in 50-character chunks into a stringstream
   linestream.str("");
   char* temp = new char[50];
   do
@@ -125,6 +139,7 @@ char* ProofReader::readLine()
   } while(reader.fail() && !reader.eof() && !reader.bad());
   delete [] temp;
   
+  //Extract char* from stringstream, remove terminal carriage return
   if(reader.fail()) return NULL;
   string tempstr = linestream.str();
   temp = new char[tempstr.size()+1];
@@ -137,7 +152,7 @@ char* ProofReader::readLine()
 //Input line was a premise command.
 bool ProofReader::pre(char* input)
 {
-  while(*input == ' ' || *input == '\t') input++;
+  input = skipLeadingWhitespace(input);
   line_number_translation[line_number_translation.size()+1] =
     line_number_translation.size()-line_number_offset;
   
@@ -149,7 +164,7 @@ bool ProofReader::pre(char* input)
 //input command was a line command
 bool ProofReader::lin(char* input)
 {
-  while(*input == ' ' || *input == '\t') input++;
+  input = skipLeadingWhitespace(input);
   if(new_line_needed)
   {
     target->addLine();
@@ -180,7 +195,7 @@ bool ProofReader::lin(char* input)
 //Input command was a subproof command
 bool ProofReader::sub(char* input)
 {
-  while(*input == ' ' || *input == '\t') input++;
+  input = skipLeadingWhitespace(input);
   extendLineNumberTranslation();
   
   target->addSubproofLine();
@@ -201,11 +216,17 @@ bool ProofReader::end(char* input)
 
 bool ProofReader::gol(char* input)
 {
-  while(*input == ' ' || *input == '\t') input++;
+  input = skipLeadingWhitespace(input);
   line_number_offset++;
   extendLineNumberTranslation();
   target->setGoal(input);
   return true;
+}
+
+char* ProofReader::skipLeadingWhitespace(char* input)
+{
+  while (*input == ' ' || *input == '\t') input++;
+  return input;
 }
 
 //TODO: add some sorta loop prevention in lemma commands

@@ -159,6 +159,16 @@ class ProofReader
   /// </returns>
   bool inf(char* input);
 #pragma endregion
+
+  /// <summary>
+  /// Finds the first character in an input string which is not a space or
+  /// a tab.
+  /// </summary>
+  /// <param name="input">Input string to search</param>
+  /// <returns>
+  ///   Pointer to a character in input (this is not a new allocation)
+  /// </returns>
+  char* skipLeadingWhitespace(char* input);
   
   /// <summary>
   /// Outputs text to the error console describing a line that couldn't be
