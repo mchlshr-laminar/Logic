@@ -21,6 +21,7 @@ bool AggregateJustification::isJustified(StatementTree& consequent,
   list<Justification*>::iterator itr = rules.begin();
   for(; itr != rules.end(); itr++)
   {
+    //Check each sub-rule in turn
     if((*itr)->isJustified(consequent, antecedents))
     {
       return true;

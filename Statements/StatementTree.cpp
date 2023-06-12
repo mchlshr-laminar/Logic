@@ -7,25 +7,33 @@ using std::list;
 //Parses the given string into a tree
 StatementTree::StatementTree(const char* input) : is_affirmed(true), validity(VALIDITY_UNKNOWN)
 {
+  //Copy the input to modify it during parsing
   atom_name = new char[strlen(input)+1];
   strcpy(atom_name, input);
+
+  //Remove any parentheses that enclose the entire string, then find the top-
+  //level operator.
   stripParens(atom_name);
   int operator_pos = findOperator(atom_name);
   node_type = operatorType(atom_name[operator_pos]);
-  if(node_type == ATOM) return;
+  if(node_type == ATOM) return; //No operator found, this is an atomic proposition
   
+  //Extract the substrings for the child nodes
   char* left = new char[operator_pos+1];
   char* right = new char[strlen(atom_name)-operator_pos];
   strncpy(left, atom_name, operator_pos);
   left[operator_pos] = '\0'; //strncpy doesn't guarantee null character
   strcpy(right, atom_name+operator_pos+1);
   delete [] atom_name;
-  atom_name = NULL;
+  atom_name = NULL; //This is not an atomic proposition
   //Check valid?
   
+  //Parse the child nodes
   children.push_front(new StatementTree(right));
   if(strlen(left) != 0 && node_type != NOT) children.push_front(new StatementTree(left));
   
+  //If this is a negation node, consolidate that into a negation flag so the
+  //tree is binary.
   consolidateNegation();
 }
 
@@ -60,17 +68,24 @@ void StatementTree::consolidateNegation()
 {
   if(node_type != NOT) return;
   
+  //Should only have one child. Make that node's children our children.
   StatementTree* old_child = children.front();
   children.splice(children.end(), old_child->children);
+
+  //Acquire the old child's node type, and the inverse of its negation flag.
+  //Note that the child shouldn't also be a negation node, as it will have
+  //also called consolidateNegation during parsing.
   node_type = old_child->node_type;
   is_affirmed = !old_child->is_affirmed;
   
   if(old_child->atom_name != NULL)
   {
+    //Old child was an atom, acquire its name.
     atom_name = new char[strlen(old_child->atom_name)+1];
     strcpy(atom_name, old_child->atom_name);
   }
   
+  //Remove the old child
   children.pop_front();
 }
 
@@ -111,6 +126,7 @@ bool StatementTree::isAffirmed()
 //formed. Valid is a misnomer but is shorter.
 bool StatementTree::isValid()
 {
+  //If this has already been checked, return the result.
   if(validity == IS_VALID) return true;
   else if(validity == IS_INVALID) return false;
   
@@ -185,11 +201,14 @@ bool StatementTree::isCommutative()
 //Returns whether or not the given tree is the same as this tree.
 bool StatementTree::equals(StatementTree& other)
 {
+  //Node type and negation flag must match
   if(node_type != other.node_type) return false;
   if(is_affirmed != other.is_affirmed) return false;
   
+  //If the nodes are atoms, they must have the same name.
   if(node_type == ATOM) return strcmp(atom_name, other.atom_name) == 0;
   
+  //Otherwise their corresponding children must be equal.
   list<StatementTree*>::iterator itr1 = children.begin();
   list<StatementTree*>::iterator itr2 = other.children.begin();
   for(; itr1 != children.end() && itr2 != other.children.end(); itr1++, itr2++)
@@ -201,7 +220,7 @@ bool StatementTree::equals(StatementTree& other)
 char* StatementTree::createDisplayString()
 {
   char* result = NULL;
-  if(node_type == ATOM)
+  if(node_type == ATOM) //Display the atom name
   {
     result = new char[strlen(atom_name)+1];
     strcpy(result, atom_name);
@@ -210,6 +229,7 @@ char* StatementTree::createDisplayString()
   {
     list<char*> inner;
     int inner_len = 0;
+
     //Find the strings for all children
     for(list<StatementTree*>::iterator itr = children.begin(); itr != children.end(); itr++)
     {
@@ -266,6 +286,7 @@ void StatementTree::negate()
 //((a&c)|(b&c)) -> (a&c)|(b&c)
 void StatementTree::stripParens(char* input)
 {
+  //Check for empty/null string
   if(input == NULL) return;
   int len = strlen(input);
   if(len == 0) return;
@@ -302,9 +323,11 @@ int StatementTree::findOperator(char* input) //Maybe look from right to left.
   int len = strlen(input);
   for(int type = OP_START; type <= OP_END; type++)
   {
+    //Iterate through order of operations
     int paren_depth = 0;
     for(int i = len-1; i >= 0; i--)
     {
+      //Operator can't be within parentheses
       if(input[i] == ')') paren_depth++;
       else if(input[i] == '(') paren_depth--;
       else if(paren_depth == 0 && operatorType(input[i]) == type) return i;

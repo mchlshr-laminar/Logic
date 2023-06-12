@@ -27,8 +27,9 @@ InferenceRule::~InferenceRule()
 void InferenceRule::addRequiredForm(const char* statement, const char* assumption)
 {
   required_form* new_form = new required_form;
-
   new_form->statementForm = new StatementTree(statement);
+
+  //Set the assumption form if there is one, otherwise set it to null
   if (assumption != NULL)
     new_form->subproofAssumptionForm = new StatementTree(assumption);
   else
@@ -63,9 +64,10 @@ bool InferenceRule::isJustified(StatementTree& con, antecedent_list& ant)
   for(antecedent_list::iterator itr = ant.begin(); itr != ant.end(); itr++)
     ant_usage[*itr] = 0;
   
+  //Check for matching forms
   bool result = findAntecedentsForForms(required_forms.begin(), ant, binds,
     ant_usage);
-  removeBoundForms(binds);
+  removeBoundForms(binds); //Cleanup
   return result;
 }
 
@@ -137,8 +139,9 @@ bool InferenceRule::findAntecedentsForSubProof(required_form_list::iterator form
     statement_set* contents = (*itr)->getSubproofContents();
     if(assumption == NULL) continue; //Statement wasn't a subproof
     
+    //Check if the assumption matches
     bool result = match(assumption, (*form)->subproofAssumptionForm, statement_binds);
-    if(!result) //Assumption didn't match
+    if(!result)
     {
       removeNewlyBoundForms(statement_binds, binds);
       continue;
@@ -149,20 +152,22 @@ bool InferenceRule::findAntecedentsForSubProof(required_form_list::iterator form
     result = false;
     for(; sub_itr != contents->end(); sub_itr++)
     {
-      //Iterate over children of antecedents to find the required statement
-      //within the subproof.
+      //Iterate over subproof contents to find the required line
       StatementTree* sub_statement = (*sub_itr)->getStatementData();
-      if(sub_statement == NULL) continue;
+      if(sub_statement == NULL) continue; //Child is a sub-subproof
       
       result = match(sub_statement, (*form)->statementForm, substatement_binds);
       if(result)
       {
+        //Required subproof line found, continue to the next form required 
+        //by the rule.
         ant_usage[*itr]++;
         result = findAntecedentsForForms(next_form, ant, substatement_binds,
           ant_usage);
         ant_usage[*itr]--;
       }
       
+      //If all remaining required forms work, the match worked.
       removeNewlyBoundForms(substatement_binds, statement_binds);
       if(result) break;
     }
@@ -186,10 +191,10 @@ bool InferenceRule::checkAntecedentRelevance(statement_usage_map& ant_usage)
 
 bool InferenceRule::match(StatementTree* target, StatementTree* form, bind_map& binds)
 {
-  //The form is a sentence variable; if it's unbound, bind & return. Else return whether
-  //the target is equivalent to the bound sentence.
   if(form->nodeType() == StatementTree::ATOM)
   {
+    //The form is a sentence variable; if it's unbound, bind & return. Else return whether
+    //the target is equivalent to the bound sentence.
     StatementTree* sentence = new StatementTree(*target, form->isAffirmed());
     pair<bind_map::iterator, bool> retval = 
       binds.insert(pair<char, StatementTree*>(form->atomName()[0], sentence));

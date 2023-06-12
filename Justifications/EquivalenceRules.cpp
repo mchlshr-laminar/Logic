@@ -130,6 +130,7 @@ void EquivalenceRule::matchFormOneNegation(StatementTree* target, equiv_pair& so
 {
   if(target->isAffirmed() != source.first->isAffirmed())
   {
+    //form 1 negation doesn't match target negation, so flip both forms.
     source.first->negate();
     source.second->negate();
   }
