@@ -153,8 +153,7 @@ char* ProofReader::readLine()
 bool ProofReader::pre(char* input)
 {
   input = skipLeadingWhitespace(input);
-  line_number_translation[line_number_translation.size()+1] =
-    line_number_translation.size()-line_number_offset;
+  extendLineNumberTranslation();
   
   target->addPremiseLine();
   target->setStatement(input);
@@ -366,8 +365,8 @@ void ProofReader::malformedLine(const char* filename, char* input)
 //For translation between file line number & proof line number.
 void ProofReader::extendLineNumberTranslation()
 {
-  line_number_translation[line_number_translation.size()+1] =
-    line_number_translation.size()-line_number_offset;
+  int target_line = line_number_translation.size() - line_number_offset;
+  line_number_translation[line_number_translation.size() + 1] = target_line;
 }
 
 bool ProofReader::matchEquivalenceForms(char* form_1, char* form_2, vector<char*> premise_1, vector<char*> premise_2)

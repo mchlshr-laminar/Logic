@@ -12,3 +12,5 @@ target_include_directories(logicVerifier PUBLIC
 	"${PROJECT_SOURCE_DIR}/Proof"
 	"${PROJECT_SOURCE_DIR}/Statements"
 	)
+
+install(TARGETS logicVerifier DESTINATION "${PROJECT_SOURCE_DIR}/bin")
