@@ -20,36 +20,41 @@ to specify the name of the input file.
 Sentences consist of atoms, and, or, not, implies/only if, iff, & parentheses. Atom names are
 an alphanumeric string.
 
-Recognized operator characters:
-And:
+Recognized operator characters:  
+
+**And:**
 ```
 ^
 *
 &
 ```
+</br>
 
-Or:
+**Or:**
 ```
 +
 |
 ```
-
-Not:
+</br>
+  
+**Not:**
 ```
 ~
 !
 ```
-
-Implies:
+</br>
+  
+**Implies:**
 ```
 >
 ```
-
-Iff:
+</br>
+  
+**Iff:**
 ```
 =
 ```
-
+  
 Only standard parentheses will be parsed as such (no brackets). Order of operations is: not, 
 and, or, implies, iff, then left to right within an operator type. Generalized disjunction/
 conjunction is not currently supported.
@@ -154,22 +159,22 @@ Conjunction
 ```
 a
 b
-----
+---
 a&b
 ```
 
 Simplification
 ```
-a&b    a&b
-----   ----
-a      b
+a&b       a&b
+----  or  ----
+a         b
 ```
 
 Addition
 ```
-a      b
-----   ----
-a|b    a|b
+a         b
+----  or  ----
+a|b       a|b
 ```
 
 Proof by Cases
@@ -213,10 +218,10 @@ a=b
 
 Binconditional Elimination
 ```
-a=b     a=b
-b       a
-----    ----
-a       b
+a=b       a=b
+b         a
+----  or  ----
+a         b
 ```
 
 Modus Tollens
@@ -252,14 +257,14 @@ a|!a
 Each line of the input file is a 3-letter command generally followed by additional 
 information. Whitespace at the beginning of a line will be ignored. Allowable lines are:
 
-`pre <sentence>`
+`pre <sentence>`</br>
 Makes <sentence> into a premise in the proof. Note that all "pre" lines must appear before 
 all "lin", "sub", or "end" lines.
 
-`gol <sentence>`
+`gol <sentence>`</br>
 Sets the goal of the proof to <sentence>
 
-`lin <sentence>:<rule name>:<antecedents>`
+`lin <sentence>:<rule name>:<antecedents>`</br>
 Adds <sentence> as the next line in the proof. If any subproofs have been started but not 
 ended, the line will be in those subproofs. <rule name> is the name of the equivalence/
 inference rule used to justify the line, and <antecedents> is a space-delimited list of the 
@@ -267,21 +272,21 @@ line numbers of the antecedents. The line number of an antecedent refers to the 
 input file on which it appears (starting at 1). An antecedent that's a subproof should give 
 the line number of the subproof's assumption.
 
-`sub <sentence>`
+`sub <sentence>`</br>
 Opens a subproof with <sentence> as the assumption. If any subproofs are already open, the 
 new subproof will be in them.
 
-`end`
+`end`</br>
 Closes the most recently opened subproof which has not already been closed.
 
-`inf <rule name>:<filename>`
+`inf <rule name>:<filename>`</br>
 Creates a new inference rule that can be used elsewhere in the proof. The named file must 
 contain a lemma proof where the goal statement is the consequent form of the new rule and 
 each of the premises of the lemma proof is one of the antecedent forms of the rule. 
 Subsequent lines in the top-level proof can use this rule as justification. The lemma proof 
 must be justified for the rule to be added.
 
-'equ <rule name>:<filename 1>:<filename 2>'
+'equ <rule name>:<filename 1>:<filename 2>'</br>
 Creates a new equivalence rule that can be used elsewhere in the proof. File 1 must contain 
 a lemma proof with a single premise of the first equivalent form and a goal of the second 
 equivalent form. File 2 is the reverse. Both proofs must be justified for the rule to 
