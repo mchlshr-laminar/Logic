@@ -305,7 +305,11 @@ lin a:Indirect Proof:4
 ```
 
 SampleInput.txt and SampleLemmaProof.txt are also included as examples. After install, run
-the command `"./bin/logicVerifier SampleInput.txt"` to run the program on this input.
+the command 
+```
+"./bin/logicVerifier SampleInput.txt"
+```
+to run the program on this input.
 
 ***
 
