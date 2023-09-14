@@ -1,0 +1,6 @@
+pre a
+pre a>b
+pre b>c
+gol c
+lin a>c:Hypothetical Syllogism:2 3
+lin c:Modus Ponens:1 5

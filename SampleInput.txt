@@ -1,0 +1,7 @@
+inf Custom Lemma:SampleLemmaProof.txt
+pre x>y
+pre x
+sub y>z
+	lin z:Custom Lemma:2 3 4
+end
+lin (y>z)>z:Conditional Proof:4
